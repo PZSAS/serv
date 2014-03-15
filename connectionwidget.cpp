@@ -12,7 +12,8 @@ ConnectionWidget::ConnectionWidget(QWidget *parent) :
 
     // serial port
     port = new QSerialPort(this);
-    startSeq.fill(0xFF,8);
+    startSeq.fill((char) 0xFF,8);
+    startDetected = false;
     updatePortList();
 
 
@@ -109,9 +110,40 @@ void ConnectionWidget::openCloseConnection()
 
 void ConnectionWidget::readData()
 {
+
+    static qint32 bytesToRead=0;
     int start;
+    bool valid;
     rawData.append(port->readAll());
-    start = Container::findStart(rawData);
+    if(!startDetected)
+    {
+        start = rawData.indexOf(startSeq);
+        if(start<0) return;
+        start += startSeq.size();
+        rawData = rawData.mid(start);
+        startDetected = true;
+    }
+    if(rawData.size() < 12) return;
+    if(bytesToRead == 0 && rawData.size() >= 12)
+    {
+        bytesToRead = Container::byteToInt32(rawData.mid(8, 4));
+    }
+    if(rawData.size() >= bytesToRead)
+    {
+        valid = Container::validateData(rawData);
+        if(valid)
+        {
+            // dodaj gdzie trzeba
+        }
+        else
+        {
+            log(tr("Odebrano nieprawidłowe dane"), 3);
+        }
+        rawData.clear();
+        startDetected = false;
+        bytesToRead = 0;
+        start = -1;
+    }
 
 
 }

@@ -8,6 +8,8 @@
 #include <QSerialPortInfo>
 #include <QTime>
 
+#include "container.h"
+
 #define MAX_LOG_COUNT 100
 
 namespace Ui {
@@ -40,6 +42,8 @@ private:
     int availablePortCount;
     QSerialPort *port;
     QByteArray rawData;
+    QByteArray startSeq;
+    bool startDetected;
 };
 
 #endif // CONNECTIONWIDGET_H
