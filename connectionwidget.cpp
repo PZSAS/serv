@@ -18,9 +18,11 @@ ConnectionWidget::ConnectionWidget(QWidget *parent) :
 
 
 
+
+
     // timer
     timer = new QTimer(this);
-    timer->setInterval(5500);
+    timer->setInterval(1000);
     timer->start();
 
 
@@ -46,7 +48,7 @@ void ConnectionWidget::updateStatus()
     if(!this->isVisible()) return;
     // uaktualnienie statusu
 
-    updateState("connection");
+    if(port->isOpen()) updateState("elapsedTime");
 }
 
 void ConnectionWidget::updatePortList()
@@ -105,7 +107,9 @@ void ConnectionWidget::openCloseConnection()
 
     log(tr("Połączono z urządzeniem"), 1);
     ui->connectButton->setText(tr("Rozłącz"));
-    updateStatus();
+    startTime = QDateTime::currentDateTime();
+    updateState("connection");
+    updateState("startTime");
 }
 
 void ConnectionWidget::readData()
@@ -197,5 +201,28 @@ void ConnectionWidget::updateState(QString state, QString value)
     {
         ;
     }
+    else if(state == "startTime")
+    {
+        value = tr("Czas rozpoczęcia: ");
+        value.append(startTime.toString("HH:mm:ss"));
+        ui->startTimeLabel->setText(value);
+    }
+    else if(state == "elapsedTime")
+    {
+        int tmp, h, m, s;
+        tmp = startTime.secsTo(QDateTime::currentDateTime());
+        s = tmp%60;
+        tmp = (tmp-s)/60;
+        m = tmp%60;
+        h = (tmp-m)/60;
+        value = tr("Czas pomiaru: ");
+        if(h) value.append(QString::number(h)).append(":");
+        if(m>0 && m<10) value.append("0");
+        if(m) value.append(QString::number(m)).append(":");
+        if(s>0 && s<10) value.append("0");
+        if(s) value.append(QString::number(s));
+        ui->elapsedTime->setText(value);
+    }
 }
 
+Container *Container::current=0;

@@ -17,9 +17,13 @@ public:
     static qint16 byteToInt16(QByteArray &data);
     static quint8 byteToUInt8(QByteArray &data);
     static bool validateData(QByteArray data);
+    static Container* getCurrent();
 
 public slots:
 
+
+private:
+    static Container *current;
 };
 
 #endif // CONTAINER_H

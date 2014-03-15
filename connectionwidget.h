@@ -44,6 +44,7 @@ private:
     QByteArray rawData;
     QByteArray startSeq;
     bool startDetected;
+    QDateTime startTime;
 };
 
 #endif // CONNECTIONWIDGET_H

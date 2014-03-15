@@ -38,7 +38,7 @@ quint8 Container::byteToUInt8(QByteArray &data)
 bool Container::validateData(QByteArray data)
 {
     QByteArray pattern;
-    int i, tmp;
+    int i, offset;
     qint32 rozmiarPliku, liczbaSekund, liczbaProbek;
     qint16 liczbaSygnalow, id, czestotliwosc, rozmiarProbki;
     pattern.setRawData("FPDM", 4);
@@ -61,24 +61,25 @@ bool Container::validateData(QByteArray data)
     }
     liczbaSekund = byteToInt32(data.mid(14,4));
 
-    // poprawic dla i>0
+    offset = 26;
+
     for(i=0;i<liczbaSygnalow;i++)
     {
         pattern.setRawData("DATA",4);
-        if(data.mid(26,4) != pattern)
+        if(data.mid(offset,4) != pattern)
         {
             qDebug() << "DATA" << i;
             return false;
         }
-        id = byteToInt16(data.mid(30,2));
-        czestotliwosc = byteToInt16(data.mid(32,2));
-        rozmiarProbki = byteToInt16(data.mid(34,2));
+        id = byteToInt16(data.mid(offset+4,2));
+        czestotliwosc = byteToInt16(data.mid(offset+6,2));
+        rozmiarProbki = byteToInt16(data.mid(offset+8,2));
         if(rozmiarProbki != 1 && rozmiarProbki != 2 && rozmiarProbki != 4)
         {
             qDebug() << "rozmiarProbki" << i;
             return false;
         }
-        liczbaProbek = byteToInt32(data.mid(36,4));
+        liczbaProbek = byteToInt32(data.mid(offset+10,4));
         if(liczbaSekund != (rozmiarProbki*liczbaProbek/czestotliwosc))
         {
             qDebug() << "liczbaSekund" << i;
@@ -87,16 +88,26 @@ bool Container::validateData(QByteArray data)
             return false;
         }
         pattern.setRawData("STOP",4);
-        tmp = 44 + liczbaProbek*rozmiarProbki;
-        if(data.mid(tmp,4) != pattern)
+        offset = offset + 18 + liczbaProbek*rozmiarProbki;
+        if(data.mid(offset,4) != pattern)
         {
             qDebug() << "STOP" << i;
             return false;
         }
+        offset += 4;
 
     }
 
     return true;
+}
+
+Container *Container::getCurrent()
+{
+    if(current == NULL)
+    {
+        current = new Container;
+    }
+    return current;
 }
 
 
