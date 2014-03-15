@@ -15,14 +15,17 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     connectionwidget.cpp \
-    container.cpp
+    container.cpp \
+    networkwidget.cpp
 
 HEADERS  += mainwindow.h \
     connectionwidget.h \
-    container.h
+    container.h \
+    networkwidget.h
 
 FORMS    += mainwindow.ui \
-    connectionwidget.ui
+    connectionwidget.ui \
+    networkwidget.ui
 
 RESOURCES += \
     images.qrc

@@ -219,7 +219,8 @@ void ConnectionWidget::updateState(QString state, QString value)
         if(h) value.append(QString::number(h)).append(":");
         if(m>0 && m<10) value.append("0");
         if(m) value.append(QString::number(m)).append(":");
-        if(s>0 && s<10) value.append("0");
+        if(s<10) value.append("0");
+        if(s==0) value.append("0");
         if(s) value.append(QString::number(s));
         ui->elapsedTime->setText(value);
     }
