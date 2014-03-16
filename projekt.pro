@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     connectionwidget.cpp \
     container.cpp \
-    networkwidget.cpp
+    networkwidget.cpp \
+    networkthread.cpp
 
 HEADERS  += mainwindow.h \
     connectionwidget.h \
     container.h \
-    networkwidget.h
+    networkwidget.h \
+    networkthread.h
 
 FORMS    += mainwindow.ui \
     connectionwidget.ui \

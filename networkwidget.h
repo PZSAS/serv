@@ -4,9 +4,13 @@
 #include <QWidget>
 #include <QTcpServer>
 #include <QTime>
+#include <QHostAddress>
+
+#include "networkthread.h"
 
 
 #define MAX_LOG_COUNT 200
+#define MAX_PEER_HISTORY 50
 
 namespace Ui {
 class NetworkWidget;
@@ -22,13 +26,16 @@ public:
 
 private slots:
     void startStopServer();
+    void handleNewConnection();
 
 private:
     void log(QString message, int level=0);
 
+
 private:
     Ui::NetworkWidget *ui;
     QTcpServer *tcpServer;
+    QStringList peerList;
 };
 
 #endif // NETWORKWIDGET_H

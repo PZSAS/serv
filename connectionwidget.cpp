@@ -7,8 +7,7 @@ ConnectionWidget::ConnectionWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // logs
-    log(tr("Uruchomiono program"));
+
 
     // serial port
     port = new QSerialPort(this);

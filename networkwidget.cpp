@@ -10,6 +10,7 @@ NetworkWidget::NetworkWidget(QWidget *parent) :
     tcpServer = new QTcpServer(this);
 
     connect(ui->serverButton, SIGNAL(clicked()), this, SLOT(startStopServer()));
+    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(handleNewConnection()));
 }
 
 NetworkWidget::~NetworkWidget()
@@ -66,4 +67,26 @@ void NetworkWidget::startStopServer()
     }
     log(tr("Uruchomiono "), 1);
     ui->serverButton->setText(tr("Wyłącz udostępnianie"));
+}
+
+void NetworkWidget::handleNewConnection()
+{
+    NetworkThread *client = new NetworkThread(this);
+    QTcpSocket *socket = tcpServer->nextPendingConnection();
+    QString peerIP = socket->peerAddress().toString();
+    client->setSocket(socket);
+    client->start();
+    if(peerList.indexOf(peerIP)<0)
+    {
+        if(peerList.count() > MAX_PEER_HISTORY)
+        {
+            peerList.takeFirst();
+        }
+
+        peerList.append(peerIP);
+        log(tr("Połączenie z adresu ").append(peerIP));
+
+    }
+
+
 }
