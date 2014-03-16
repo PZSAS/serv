@@ -109,11 +109,11 @@ void ConnectionWidget::openCloseConnection()
     startTime = QDateTime::currentDateTime();
     updateState("connection");
     updateState("startTime");
+    Container::getCurrent()->clear();
 }
 
 void ConnectionWidget::readData()
 {
-
     static qint32 bytesToRead=0;
     int start;
     bool valid;
@@ -133,12 +133,9 @@ void ConnectionWidget::readData()
     }
     if(rawData.size() >= bytesToRead)
     {
-        valid = Container::validateData(rawData);
-        if(valid)
-        {
-            // dodaj gdzie trzeba
-        }
-        else
+
+        valid = Container::getCurrent()->load(rawData, true);
+        if(!valid)
         {
             log(tr("Odebrano nieprawidłowe dane"), 3);
         }

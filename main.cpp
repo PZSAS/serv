@@ -4,7 +4,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    a.setApplicationName("Monitor oddechu");
+    a.setApplicationName("MonitorOddechu");
     a.setOrganizationName("StudenciEAE");
     a.setOrganizationDomain("www.kmeif.pwr.wroc.pl");
 
