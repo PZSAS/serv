@@ -32,7 +32,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit">
+           <widget class="QLineEdit" name="serverPassLabel">
             <property name="echoMode">
              <enum>QLineEdit::Password</enum>
             </property>
@@ -52,7 +52,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="changePassButton">
             <property name="text">
              <string>Zmień hasło</string>
             </property>
@@ -72,7 +72,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="spinBox">
+         <widget class="QSpinBox" name="portWidget">
           <property name="minimum">
            <number>1</number>
           </property>
@@ -98,7 +98,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="serverButton">
           <property name="text">
            <string>Włącz udostępnianie</string>
           </property>
@@ -108,6 +108,16 @@
       </item>
      </layout>
     </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Dziennik zdarzeń:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QListWidget" name="logList"/>
    </item>
    <item row="1" column="0">
     <widget class="QGroupBox" name="groupBox_2">
@@ -216,16 +226,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_5">
-     <property name="text">
-      <string>Dziennik zdarzeń:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QListWidget" name="listWidget"/>
    </item>
   </layout>
  </widget>

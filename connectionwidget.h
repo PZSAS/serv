@@ -10,7 +10,8 @@
 
 #include "container.h"
 
-#define MAX_LOG_COUNT 100
+#define MAX_LOG_COUNT 200
+
 
 namespace Ui {
 class ConnectionWidget;
