@@ -17,11 +17,6 @@ void NetworkThread::setSocket(int socketDesc)
     ready = true;
 }
 
-void NetworkThread::setPassword(QString pass)
-{
-    password = pass;
-}
-
 void NetworkThread::run()
 {
     if(!ready) return;
@@ -103,6 +98,9 @@ void NetworkThread::run()
         pos = fileName.indexOf("?");
         if(pos > 0) fileName = fileName.left(pos);
 
+        QSettings settings;
+        password = settings.value("password").toString();
+
         if(password.length() > 0)
         {
             pass = QString();
@@ -128,6 +126,7 @@ void NetworkThread::run()
             }
         }
 
+        // response
 
         if(socket.state() != QAbstractSocket::ConnectedState)
         {
@@ -163,7 +162,6 @@ void NetworkThread::run()
         }
         QDir dir;
         QFile file;
-        QSettings settings;
         dir.setPath(settings.value("dataDir").toString());
         file.setFileName(dir.absoluteFilePath(fileName));
         if(!dir.exists() || !file.exists() || !file.open(QIODevice::ReadOnly))
@@ -283,7 +281,6 @@ void NetworkThread::doStuff()
                 }
             }
             buffer = password.toLocal8Bit();
-            qDebug() << buffer;
             password = QString(QCryptographicHash::hash(buffer,QCryptographicHash::Md5).toHex());
             qDebug() << pass << password << headers;
             if(pass != password)
@@ -410,7 +407,7 @@ QByteArray NetworkThread::fileTxtList()
     while(list.size() > 0)
     {
         if(data.length() > 0) data.append("\r\n");
-        data.append(list.takeFirst().toUtf8());
+        data.append(list.takeFirst().toLocal8Bit());
     }
     return data;
 }

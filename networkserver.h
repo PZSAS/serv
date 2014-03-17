@@ -11,8 +11,6 @@ class NetworkServer : public QTcpServer
 public:
     explicit NetworkServer(QObject *parent = 0);
 
-    void setPass(const QString &password);
-
 signals:
 
 protected:

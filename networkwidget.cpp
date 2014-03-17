@@ -9,6 +9,10 @@ NetworkWidget::NetworkWidget(QWidget *parent) :
 
 
     connect(ui->serverButton, SIGNAL(clicked()), this, SLOT(startStopServer()));
+
+    QSettings settings;
+    if(!settings.contains("password")) settings.setValue("password", QString());
+    ui->serverPassLabel->setText(settings.value("password").toString());
 }
 
 NetworkWidget::~NetworkWidget()
@@ -65,9 +69,15 @@ void NetworkWidget::startStopServer()
     {
         log(tr("Nie można uruchomić serwera"), 4);
     }
-    server.setPass(ui->serverPassLabel->text());
     log(tr("Uruchomiono "), 1);
     ui->serverButton->setText(tr("Wyłącz udostępnianie"));
 }
 
 
+
+void NetworkWidget::on_changePassButton_clicked()
+{
+    QSettings settings;
+    settings.setValue("password", ui->serverPassLabel->text());
+    settings.sync();
+}

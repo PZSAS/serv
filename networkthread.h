@@ -23,7 +23,6 @@ public slots:
 
 public:
     void setSocket(int socketDesc);
-    void setPassword(QString pass);
 
 private slots:
     void doStuff();

@@ -5,6 +5,7 @@
 #include <QTcpServer>
 #include <QTime>
 #include <QHostAddress>
+#include <QSettings>
 
 #include "networkserver.h"
 #include "networkthread.h"
@@ -27,6 +28,8 @@ public:
 
 private slots:
     void startStopServer();
+
+    void on_changePassButton_clicked();
 
 private:
     void log(QString message, int level=0);
