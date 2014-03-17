@@ -6,6 +6,7 @@
 #include <QTime>
 #include <QHostAddress>
 
+#include "networkserver.h"
 #include "networkthread.h"
 
 
@@ -26,7 +27,6 @@ public:
 
 private slots:
     void startStopServer();
-    void handleNewConnection();
 
 private:
     void log(QString message, int level=0);
@@ -34,7 +34,7 @@ private:
 
 private:
     Ui::NetworkWidget *ui;
-    QTcpServer *tcpServer;
+    NetworkServer server;
     QStringList peerList;
 };
 

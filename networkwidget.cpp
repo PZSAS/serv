@@ -7,17 +7,16 @@ NetworkWidget::NetworkWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    tcpServer = new QTcpServer(this);
 
     connect(ui->serverButton, SIGNAL(clicked()), this, SLOT(startStopServer()));
-    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(handleNewConnection()));
 }
 
 NetworkWidget::~NetworkWidget()
 {
-    if(tcpServer->isListening())
+
+    if(server.isListening())
     {
-        tcpServer->close();
+        server.close();
     }
     delete ui;
 }
@@ -54,39 +53,21 @@ void NetworkWidget::log(QString message, int level)
 
 void NetworkWidget::startStopServer()
 {
-    if(tcpServer->isListening())
+
+    if(server.isListening())
     {
-        tcpServer->close();
+        server.close();
         ui->serverButton->setText(tr("Włącz udostępnianie"));
         log(tr("Wyłączono udostępnianie"), 2);
         return;
     }
-    if(!tcpServer->listen(QHostAddress::Any, ui->portWidget->value()))
+    if(!server.listen(QHostAddress::Any, ui->portWidget->value()))
     {
         log(tr("Nie można uruchomić serwera"), 4);
     }
+    server.setPass(ui->serverPassLabel->text());
     log(tr("Uruchomiono "), 1);
     ui->serverButton->setText(tr("Wyłącz udostępnianie"));
 }
 
-void NetworkWidget::handleNewConnection()
-{
-    NetworkThread *client = new NetworkThread(this);
-    QTcpSocket *socket = tcpServer->nextPendingConnection();
-    QString peerIP = socket->peerAddress().toString();
-    client->setSocket(socket);
-    client->start();
-    if(peerList.indexOf(peerIP)<0)
-    {
-        if(peerList.count() > MAX_PEER_HISTORY)
-        {
-            peerList.takeFirst();
-        }
 
-        peerList.append(peerIP);
-        log(tr("Połączenie z adresu ").append(peerIP));
-
-    }
-
-
-}
