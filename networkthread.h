@@ -24,8 +24,6 @@ public slots:
 public:
     void setSocket(int socketDesc);
 
-private slots:
-    void doStuff();
 
 
 private:
