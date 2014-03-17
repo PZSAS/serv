@@ -34,6 +34,7 @@ ConnectionWidget::ConnectionWidget(QWidget *parent) :
     connect(port, SIGNAL(readyRead()), this, SLOT(readData()));
 
 
+
 }
 
 ConnectionWidget::~ConnectionWidget()
@@ -78,6 +79,7 @@ void ConnectionWidget::openCloseConnection()
         log("Rozłączono z urządzeniem", 2);
         ui->connectButton->setText(tr("Połącz"));
         updateStatus();
+        Container::getCurrent()->saveToFile();
         return;
     }
     if(!ui->portListWidget->count())

@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QSystemTrayIcon>
+#include <QSettings>
+#include <QDebug>
 
 namespace Ui {
 class MainWindow;

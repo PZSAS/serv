@@ -36,6 +36,62 @@ quint8 Container::byteToUInt8(QByteArray &data)
     return *number;
 }
 
+QByteArray Container::int32ToByte(qint32 number)
+{
+    QByteArray data;
+    void *p;
+    char *c;
+    p = &number;
+    c = static_cast <char *> (p);
+    data.setRawData(c, 4);
+    return data;
+
+}
+
+QByteArray Container::int16ToByte(qint16 number)
+{
+    QByteArray data;
+    void *p;
+    char *c;
+    p = &number;
+    c = static_cast <char *> (p);
+    data.setRawData(c, 2);
+    return data;
+}
+
+QByteArray Container::uint8ToByte(quint8 number)
+{
+    QByteArray data;
+    void *p;
+    char *c;
+    p = &number;
+    c = static_cast <char *> (p);
+    data.setRawData(c, 1);
+    return data;
+}
+
+QByteArray Container::int16VecToByte16(QVector<qint16> tab)
+{
+    QByteArray date;
+    int i, max = tab.size();
+    for(i=0;i<max;i++)
+    {
+        date.append(int16ToByte(tab[i]));
+    }
+    return date;
+}
+
+QByteArray Container::int16VecToByte8(QVector<qint16> tab)
+{
+    QByteArray date;
+    int i, max = tab.size();
+    for(i=0;i<max;i++)
+    {
+        date.append(uint8ToByte((quint8)tab[i]));
+    }
+    return date;
+}
+
 QVector<qint16> Container::dataToInt16Vec(QByteArray &data)
 {
     QVector<qint16> tab;
@@ -136,7 +192,7 @@ bool Container::validateData(QByteArray data)
             return false;
         }
         liczbaProbek = byteToInt32(data.mid(offset+10,4));
-        if(liczbaSekund != (rozmiarProbki*liczbaProbek/czestotliwosc))
+        if(liczbaSekund != (liczbaProbek/czestotliwosc))
         {
             qDebug() << "liczbaSekund" << i;
             qDebug() << "sekundy" << liczbaSekund << "r probki" << rozmiarProbki
@@ -223,7 +279,7 @@ bool Container::load(QByteArray data, bool append)
             return false;
         }
         liczbaProbek = byteToInt32(data.mid(offset+10,4));
-        if(liczbaSekund != (rozmiarProbki*liczbaProbek/czestotliwosc))
+        if(liczbaSekund != (liczbaProbek/czestotliwosc))
         {
             qDebug() << "liczbaSekund" << i;
             qDebug() << "sekundy" << liczbaSekund << "r probki" << rozmiarProbki
@@ -297,7 +353,6 @@ bool Container::load(QByteArray data, bool append)
         loaded = true;
     }
 
-
     return true;
 }
 
@@ -306,14 +361,107 @@ void Container::clear()
     loaded = false;
 }
 
-bool Container::twoByte(QVector<qint16> tab)
+
+
+bool Container::saveToFile(QString fileName)
 {
-    int i, size = tab.size();
-    for(i=0;i<size;i++)
+    if(!loaded) return false;
+
+    qint32 rozmiarPliku;
+    SampleInfo sampleInfo;
+    QMap<qint16, QVector<qint16>>::iterator ir;
+
+    if(fileName.length() < 1)
     {
-        if((tab[i] & 0xFF00) != 0 ) return true;
+        QSettings settings;
+        QDir dir;
+        fileName = startTime.toString("ddMMMM").append(".fmd");
+        dir.setPath(settings.value("dataDir").toString());
+        if(!dir.exists())
+        {
+            qDebug() << "katalog docelowy nie istnieje";
+            return false;
+        }
+        fileName = dir.absoluteFilePath(fileName);
+        qDebug() << fileName;
     }
-    return false;
+
+    QFile file(fileName);
+    QByteArray buffer;
+
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        file.close();
+        qDebug() << "nie mozna otworzyc pliku";
+        return false;
+    }
+    // FPDM
+    buffer.setRawData("FPDM", 4);
+    file.write(buffer);
+
+    // timestamp
+    file.write(int32ToByte((qint32) startTime.toTime_t()));
+
+    // rozmiarPliku
+    rozmiarPliku = 26 + (samples.size() *  22);
+    for(ir = samples.begin(); ir != samples.end() ; ++ir)
+    {
+        rozmiarPliku += ir.value().size() * samplesInfo[ir.key()].sampleSize;
+    }
+    file.write(int32ToByte(rozmiarPliku));
+
+    // liczbaSygnalow
+    file.write(int16ToByte((qint16) samples.size()));
+
+    // liczbaSekund
+    file.write(int32ToByte(durationTime));
+
+    // zarezerwowane
+    buffer.fill((char) 0, 8);
+    file.write(buffer);
+
+    // zapis sygnalow
+    for(ir = samples.begin(); ir != samples.end() ; ++ir)
+    {
+        sampleInfo = samplesInfo[ir.key()];
+        // DATA
+        buffer.setRawData("DATA", 4);
+        file.write(buffer);
+
+        // id
+        file.write(int16ToByte(ir.key()));
+
+        // czestotliwosc
+        file.write(int16ToByte(sampleInfo.freq));
+
+        // rozmiarProbki
+        file.write(int16ToByte(sampleInfo.sampleSize));
+
+        // liczbaProbek
+        file.write(int32ToByte((qint32) ir.value().size()));
+
+        // zarezerwowane
+        buffer.fill((char) 0, 4);
+        file.write(buffer);
+
+        // sygnal
+        if(sampleInfo.sampleSize = 1)
+        {
+            file.write(int16VecToByte8(ir.value()));
+        }
+        else
+        {
+            file.write(int16VecToByte16(ir.value()));
+        }
+
+        // STOP
+        buffer.setRawData("STOP", 4);
+        file.write(buffer);
+
+    }
+    file.close();
+
+    return true;
 }
 
 
