@@ -232,6 +232,7 @@ FileInfo Container::fileInfo(QString fileName, bool absolutePath)
         dir.setPath(settings.value("dataDir").toString());
         fileName = dir.absoluteFilePath(fileName);
     }
+    file.setFileName(fileName);
     if(!file.open(QIODevice::ReadOnly))
     {
         qDebug() << "nie ma takiego pliku";
@@ -244,14 +245,15 @@ FileInfo Container::fileInfo(QString fileName, bool absolutePath)
         qDebug() << "nieprawidlowy plik";
         return fileInfo;
     }
+
+    // timestamp
+    fileInfo.startDate = QDateTime::fromTime_t(byteToInt32(data.mid(4,4)));
+
     // liczbaSekund
     fileInfo.duration = byteToInt32(data.mid(14,4));
 
     // liczbaSygnalow
     fileInfo.signalsCount = byteToInt32(data.mid(12,2));
-
-    // timestamp
-    fileInfo.startDate = QDateTime::fromTime_t(byteToInt32(data.mid(12,2)));
 
     return fileInfo;
 
