@@ -14,7 +14,7 @@ void FileLoaderThread::run()
     FileInfo fi;
 
     dir.setPath(settings.value("dataDir").toString());
-    fileList = dir.entryList(QStringList("*.fmd"));
+    fileList = dir.entryList(QStringList("*.fmd"), QDir::NoFilter, QDir::Time);
 
     while(!fileList.isEmpty())
     {
