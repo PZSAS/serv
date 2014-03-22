@@ -17,6 +17,15 @@ typedef struct
 
 } SampleInfo;
 
+typedef struct
+{
+
+    QDateTime startDate;
+    int duration;
+    int signalsCount;
+
+} FileInfo;
+
 class Container : public QObject
 {
     Q_OBJECT
@@ -37,6 +46,7 @@ public:
     static QVector<qint16> dataToInt16Vec(QByteArray &data);
     static QVector<qint16> data8ToInt16Vec(QByteArray &data);
     static bool validateData(QByteArray data);
+    static FileInfo fileInfo(QString fileName, bool absolutePath = false);
     static Container* getCurrent();
 
 public slots:
@@ -45,6 +55,8 @@ public:
     bool load(QByteArray data, bool append = false);
     void clear();
     bool saveToFile(QString fileName = QString());
+    int getDurationTime();
+    QDateTime getStartTime();
 
 private:
     static Container *current;

@@ -224,4 +224,4 @@ void ConnectionWidget::updateState(QString state, QString value)
     }
 }
 
-Container *Container::current=0;
+

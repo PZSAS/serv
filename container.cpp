@@ -6,6 +6,8 @@ Container::Container(QObject *parent) :
     loaded = false;
 }
 
+Container *Container::current=0;
+
 qint32 Container::byteToInt32(QByteArray &data)
 {
     if(data.size() != 4) return 0;
@@ -213,6 +215,49 @@ bool Container::validateData(QByteArray data)
     return true;
 }
 
+FileInfo Container::fileInfo(QString fileName, bool absolutePath)
+{
+    QFile file;
+    QDir dir;
+    FileInfo fileInfo;
+    QByteArray data;
+
+    fileInfo.duration = 0;
+    fileInfo.signalsCount = 0;
+    fileInfo.startDate = QDateTime();
+
+    if(!absolutePath)
+    {
+        QSettings settings;
+        dir.setPath(settings.value("dataDir").toString());
+        fileName = dir.absoluteFilePath(fileName);
+    }
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "nie ma takiego pliku";
+        return fileInfo;
+    }
+    data = file.read(18);
+    file.close();
+    if(data.length() != 18)
+    {
+        qDebug() << "nieprawidlowy plik";
+        return fileInfo;
+    }
+    // liczbaSekund
+    fileInfo.duration = byteToInt32(data.mid(14,4));
+
+    // liczbaSygnalow
+    fileInfo.signalsCount = byteToInt32(data.mid(12,2));
+
+    // timestamp
+    fileInfo.startDate = QDateTime::fromTime_t(byteToInt32(data.mid(12,2)));
+
+    return fileInfo;
+
+
+}
+
 Container *Container::getCurrent()
 {
     if(current == NULL)
@@ -359,6 +404,10 @@ bool Container::load(QByteArray data, bool append)
 void Container::clear()
 {
     loaded = false;
+    durationTime = 0;
+    startTime = QDateTime();
+    samples.clear();
+    samplesInfo.clear();
 }
 
 
@@ -383,7 +432,6 @@ bool Container::saveToFile(QString fileName)
             return false;
         }
         fileName = dir.absoluteFilePath(fileName);
-        qDebug() << fileName;
     }
 
     QFile file(fileName);
@@ -462,6 +510,18 @@ bool Container::saveToFile(QString fileName)
     file.close();
 
     return true;
+}
+
+int Container::getDurationTime()
+{
+    if(!loaded) return 0;
+    return durationTime;
+}
+
+QDateTime Container::getStartTime()
+{
+    if(!loaded) return QDateTime();
+    return startTime;
 }
 
 

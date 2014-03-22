@@ -18,18 +18,25 @@ SOURCES += main.cpp\
     container.cpp \
     networkwidget.cpp \
     networkthread.cpp \
-    networkserver.cpp
+    networkserver.cpp \
+    filepreview.cpp \
+    filelisttable.cpp \
+    fileloaderthread.cpp
 
 HEADERS  += mainwindow.h \
     connectionwidget.h \
     container.h \
     networkwidget.h \
     networkthread.h \
-    networkserver.h
+    networkserver.h \
+    filepreview.h \
+    filelisttable.h \
+    fileloaderthread.h
 
 FORMS    += mainwindow.ui \
     connectionwidget.ui \
-    networkwidget.ui
+    networkwidget.ui \
+    filepreview.ui
 
 RESOURCES += \
     images.qrc
