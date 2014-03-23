@@ -53,6 +53,7 @@ void NetworkWidget::log(QString message, int level)
         break;
 
     }
+    ui->logList->scrollToBottom();
 }
 
 void NetworkWidget::startStopServer()

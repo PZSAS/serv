@@ -6,8 +6,7 @@ ConnectionWidget::ConnectionWidget(QWidget *parent) :
     ui(new Ui::ConnectionWidget)
 {
     ui->setupUi(this);
-    ui->calcelConnectButton->hide();
-
+    ui->cancelConnectButton->hide();
 
     // serial port
     port = new QSerialPort(this);
@@ -16,15 +15,10 @@ ConnectionWidget::ConnectionWidget(QWidget *parent) :
     updatePortList();
 
 
-
-
-
     // timer
     timer = new QTimer(this);
     timer->setInterval(1000);
     timer->start();
-
-
 
     // connections
     connect(timer, SIGNAL(timeout()), this, SLOT(updateStatus()));
@@ -39,6 +33,7 @@ ConnectionWidget::ConnectionWidget(QWidget *parent) :
 ConnectionWidget::~ConnectionWidget()
 {
     if(port->isOpen()) port->close();
+    timer->stop();
     delete ui;
 }
 
@@ -47,7 +42,16 @@ void ConnectionWidget::updateStatus()
     if(!this->isVisible()) return;
     // uaktualnienie statusu
 
-    if(!port->isOpen()) return;
+    if(!port->isOpen())
+    {
+        if(!isVisible()) return;
+        updateState("connection");
+        updateState("dataTransfer", "--");
+        updateState("deviceTime", "--");
+        updateState("startTime", "--");
+        updateState("elapsedTime");
+        return;
+    }
     updateState("elapsedTime");
     if((QDateTime::currentDateTime().toTime_t() - lastTransferTime) > 12)
     {
@@ -91,7 +95,7 @@ void ConnectionWidget::openCloseConnection()
         port->close();
         log("Rozłączono z urządzeniem", 2);
         ui->connectButton->setText(tr("Rozpocznij zapis"));
-        ui->calcelConnectButton->hide();
+        ui->cancelConnectButton->hide();
         updateStatus();
         Container::getCurrent()->saveToFile();
         return;
@@ -123,7 +127,7 @@ void ConnectionWidget::openCloseConnection()
     log(tr("Połączono z urządzeniem"), 1);
     ui->connectButton->setText(tr("Zakończ i zapisz"));
     startTime = QDateTime::currentDateTime();
-    ui->calcelConnectButton->show();
+    ui->cancelConnectButton->show();
     updateState("connection");
     updateState("startTime");
     Container::getCurrent()->clear();
@@ -158,9 +162,15 @@ void ConnectionWidget::readData()
         if(!valid)
         {
             log(tr("Odebrano nieprawidłowe dane"), 3);
-            updateState("dataTransfer", tr("OK"));
+            updateState("dataTransfer", tr("Odebrano nieprawidłowe dane"));
         }
-        updateState("dataTransfer", tr("Odebrano nieprawidłowe dane"));
+        updateState("dataTransfer", tr("OK"));
+        if(qAbs(Container::byteToInt32(rawData.mid(14, 4))
+                - (qint32) QDateTime::currentDateTime().toTime_t()) > 60*15)
+        {
+            updateState("deviceTime", tr("ponad 15 minut różnicy"));
+        }
+        else updateState("deviceTime", tr("prawidłowy"));
         rawData.clear();
         startDetected = false;
         bytesToRead = 0;
@@ -198,6 +208,7 @@ void ConnectionWidget::log(QString message, int level)
         break;
 
     }
+    ui->logList->scrollToBottom();
 }
 
 void ConnectionWidget::updateState(QString state, QString value)
@@ -213,27 +224,35 @@ void ConnectionWidget::updateState(QString state, QString value)
     }
     else if(state == "dataTransfer")
     {
-        ;
+        ui->dataTransferLabel->setText(tr("Transfer danych: ").append(value));
     }
-    else if(state == "correctTime")
+    else if(state == "deviceTime")
     {
-        ;
+        value = tr("Czas urządzenia: ").append(value);
+        ui->deviceTimeLabel->setText(value);
     }
     else if(state == "startTime")
     {
         value = tr("Czas rozpoczęcia: ");
-        value.append(startTime.toString("HH:mm:ss"));
+        if(port->isOpen()) value.append(startTime.toString("HH:mm:ss"));
+        else value.append("--");
         ui->startTimeLabel->setText(value);
     }
     else if(state == "elapsedTime")
     {
+        value = tr("Czas pomiaru: ");
+        if(!port->isOpen())
+        {
+            value.append("--");
+            ui->elapsedTime->setText(value);
+            return;
+        }
         int tmp, h, m, s;
         tmp = startTime.secsTo(QDateTime::currentDateTime());
         s = tmp%60;
         tmp = (tmp-s)/60;
         m = tmp%60;
         h = (tmp-m)/60;
-        value = tr("Czas pomiaru: ");
         if(h) value.append(QString::number(h)).append(":");
         if(m>0 && m<10) value.append("0");
         if(m) value.append(QString::number(m)).append(":");
@@ -246,12 +265,14 @@ void ConnectionWidget::updateState(QString state, QString value)
 
 
 
-void ConnectionWidget::on_calcelConnectButton_clicked()
+
+
+void ConnectionWidget::on_cancelConnectButton_clicked()
 {
     port->close();
     log("Rozłączono z urządzeniem bez zapisywania", 2);
     ui->connectButton->setText(tr("Rozpocznij zapis"));
-    ui->calcelConnectButton->hide();
+    ui->cancelConnectButton->hide();
     updateStatus();
     Container::getCurrent()->clear();
     return;

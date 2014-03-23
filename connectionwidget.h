@@ -31,8 +31,7 @@ private slots:
     void updatePortList();
     void openCloseConnection();
     void readData();
-
-    void on_calcelConnectButton_clicked();
+    void on_cancelConnectButton_clicked();
 
 private:
     void log(QString message, int level=0);
