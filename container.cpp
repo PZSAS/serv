@@ -526,5 +526,10 @@ QDateTime Container::getStartTime()
     return startTime;
 }
 
+bool Container::isLoaded()
+{
+    return loaded;
+}
+
 
 

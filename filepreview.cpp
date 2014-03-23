@@ -9,6 +9,8 @@ FilePreview::FilePreview(QWidget *parent) :
 
     QSettings settings;
     ui->dataDirPathLabel->setText(settings.value("dataDir").toString());
+
+    connect(ui->refreshListButton, SIGNAL(clicked()), ui->fileListTable, SLOT(loadFileList()));
 }
 
 FilePreview::~FilePreview()
@@ -28,4 +30,5 @@ void FilePreview::on_changeDataDirLabel_clicked()
     ui->dataDirPathLabel->setText(dir);
     settings.setValue("dataDir", dir);
     settings.sync();
+    ui->fileListTable->loadFileList();
 }

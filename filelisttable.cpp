@@ -14,6 +14,7 @@ FileListTable::FileListTable(QWidget *parent) :
 
 
     loadFileList();
+
 }
 
 
@@ -36,10 +37,16 @@ void FileListTable::insertData(QString fileName, QDateTime startTime, int durati
 
 void FileListTable::loadFileList()
 {
+    int i;
+    for(i=rowCount()-1;i>=0;--i) removeRow(i); // clear list
+    Container *current = Container::getCurrent();
+    if(current->isLoaded())
+    {
+        insertData(tr("Aktualny"), current->getStartTime(), current->getDurationTime());
+    }
     thread = new FileLoaderThread();
     connect(thread, SIGNAL(fileInfo(QString,QDateTime,int)), this, SLOT(insertData(QString,QDateTime,int)));
     thread->start();
-    thread->deleteLater();
 
 
 }

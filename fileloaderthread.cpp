@@ -5,6 +5,7 @@ FileLoaderThread::FileLoaderThread(QObject *parent) :
 {
 }
 
+
 void FileLoaderThread::run()
 {
     QSettings settings;
@@ -23,4 +24,5 @@ void FileLoaderThread::run()
         emit fileInfo(fileName, fi.startDate, fi.duration);
 
     }
+    deleteLater();
 }

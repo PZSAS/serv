@@ -6,7 +6,7 @@ ConnectionWidget::ConnectionWidget(QWidget *parent) :
     ui(new Ui::ConnectionWidget)
 {
     ui->setupUi(this);
-
+    ui->calcelConnectButton->hide();
 
 
     // serial port
@@ -23,7 +23,6 @@ ConnectionWidget::ConnectionWidget(QWidget *parent) :
     timer = new QTimer(this);
     timer->setInterval(1000);
     timer->start();
-
 
 
 
@@ -48,7 +47,21 @@ void ConnectionWidget::updateStatus()
     if(!this->isVisible()) return;
     // uaktualnienie statusu
 
-    if(port->isOpen()) updateState("elapsedTime");
+    if(!port->isOpen()) return;
+    updateState("elapsedTime");
+    if((QDateTime::currentDateTime().toTime_t() - lastTransferTime) > 12)
+    {
+        QString err;
+        err.append(tr("Nie otrzymano danych od "));
+        err.append(QString::number(QDateTime::currentDateTime().toTime_t()-lastTransferTime));
+        err.append(tr(" sekund"));
+        if(showTransferError)
+        {
+            log(tr("Brak transmisji danych"), 3);
+            showTransferError = false;
+        }
+        updateState("dataTransfer", err);
+    }
 }
 
 void ConnectionWidget::updatePortList()
@@ -77,7 +90,8 @@ void ConnectionWidget::openCloseConnection()
     {
         port->close();
         log("Rozłączono z urządzeniem", 2);
-        ui->connectButton->setText(tr("Połącz"));
+        ui->connectButton->setText(tr("Rozpocznij zapis"));
+        ui->calcelConnectButton->hide();
         updateStatus();
         Container::getCurrent()->saveToFile();
         return;
@@ -107,11 +121,14 @@ void ConnectionWidget::openCloseConnection()
     port->setFlowControl(QSerialPort::NoFlowControl);
 
     log(tr("Połączono z urządzeniem"), 1);
-    ui->connectButton->setText(tr("Rozłącz"));
+    ui->connectButton->setText(tr("Zakończ i zapisz"));
     startTime = QDateTime::currentDateTime();
+    ui->calcelConnectButton->show();
     updateState("connection");
     updateState("startTime");
     Container::getCurrent()->clear();
+    showTransferError = true;
+    lastTransferTime = QDateTime::currentDateTime().toTime_t();
 }
 
 void ConnectionWidget::readData()
@@ -135,12 +152,15 @@ void ConnectionWidget::readData()
     }
     if(rawData.size() >= bytesToRead)
     {
-
+        lastTransferTime = QDateTime::currentDateTime().toTime_t();
+        showTransferError = true;
         valid = Container::getCurrent()->load(rawData, true);
         if(!valid)
         {
             log(tr("Odebrano nieprawidłowe dane"), 3);
+            updateState("dataTransfer", tr("OK"));
         }
+        updateState("dataTransfer", tr("Odebrano nieprawidłowe dane"));
         rawData.clear();
         startDetected = false;
         bytesToRead = 0;
@@ -225,3 +245,14 @@ void ConnectionWidget::updateState(QString state, QString value)
 }
 
 
+
+void ConnectionWidget::on_calcelConnectButton_clicked()
+{
+    port->close();
+    log("Rozłączono z urządzeniem bez zapisywania", 2);
+    ui->connectButton->setText(tr("Rozpocznij zapis"));
+    ui->calcelConnectButton->hide();
+    updateStatus();
+    Container::getCurrent()->clear();
+    return;
+}

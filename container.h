@@ -57,6 +57,7 @@ public:
     bool saveToFile(QString fileName = QString());
     int getDurationTime();
     QDateTime getStartTime();
+    bool isLoaded();
 
 private:
     static Container *current;

@@ -191,6 +191,7 @@ void NetworkThread::run()
         file.close();
         socket.close();
     }
+    deleteLater();
 }
 
 QByteArray NetworkThread::generateHeaders(int code, QString mime)

@@ -7,6 +7,7 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QTime>
+#include <QDateTime>
 
 #include "container.h"
 
@@ -31,6 +32,8 @@ private slots:
     void openCloseConnection();
     void readData();
 
+    void on_calcelConnectButton_clicked();
+
 private:
     void log(QString message, int level=0);
     void closeConnection();
@@ -46,6 +49,8 @@ private:
     QByteArray startSeq;
     bool startDetected;
     QDateTime startTime;
+    uint lastTransferTime;
+    bool showTransferError;
 };
 
 #endif // CONNECTIONWIDGET_H
