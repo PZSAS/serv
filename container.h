@@ -33,6 +33,7 @@ public:
     explicit Container(QObject *parent = 0);
 
 signals:
+    void currentUpdated();
 
 public:
     static qint32 byteToInt32(QByteArray &data);
@@ -52,7 +53,8 @@ public:
 public slots:
 
 public:
-    bool load(QByteArray data, bool append = false);
+    bool load(QByteArray &data, bool append = false);
+    bool loadFromFile(QString fileName, bool absolutePath = false);
     void clear();
     bool saveToFile(QString fileName = QString());
     int getDurationTime();
@@ -65,6 +67,7 @@ private:
     qint32 durationTime;
     QMap<qint16, SampleInfo> samplesInfo;
     QMap<qint16, QVector<qint16>> samples;
+    quint16 lastIterator;
     bool loaded;
 };
 

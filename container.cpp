@@ -269,12 +269,13 @@ Container *Container::getCurrent()
     return current;
 }
 
-bool Container::load(QByteArray data, bool append)
+bool Container::load(QByteArray &data, bool append)
 {
     QDateTime startTime;
     QMap<qint16, SampleInfo> lSamplesInfo;
     QMap<qint16, QVector<qint16>> lSamples;
     QVector<qint16> tab;
+    QVector<qint16> tmpTab;
     QMap<qint16, SampleInfo>::iterator irf;
     QMap<qint16, QVector<qint16>>::iterator ir;
 
@@ -283,6 +284,8 @@ bool Container::load(QByteArray data, bool append)
     int i, offset;
     qint32 rozmiarPliku, liczbaSekund, liczbaProbek, timestamp;
     qint16 liczbaSygnalow, id, czestotliwosc, rozmiarProbki;
+    quint16 iterator;
+    quint16 brakujacychRamek;
     pattern.setRawData("FPDM", 4);
     if(data.mid(0,4) != pattern)
     {
@@ -294,7 +297,7 @@ bool Container::load(QByteArray data, bool append)
     rozmiarPliku = byteToInt32(data.mid(8,4));
     if(rozmiarPliku != data.size())
     {
-        qDebug() << "rozmiarPliku";
+        qDebug() << "rozmiarPliku" << rozmiarPliku << data.size();
         return false;
     }
     liczbaSygnalow = byteToInt16(data.mid(12,2));
@@ -304,6 +307,7 @@ bool Container::load(QByteArray data, bool append)
         return false;
     }
     liczbaSekund = byteToInt32(data.mid(14,4));
+    iterator = (quint16) byteToInt16(data.mid(18,2));
 
     offset = 26;
 
@@ -364,6 +368,13 @@ bool Container::load(QByteArray data, bool append)
             return false;
         }
 
+        if(lastIterator >= iterator)
+        {
+            qDebug() << "zly identyfikator paczki";
+            return false;
+        }
+
+        // sprawdza czy otrzymane dane sa tego typu co dotychczasowe
         for (irf = samplesInfo.begin(); irf != samplesInfo.end(); ++irf)
         {
             if(irf.value().freq != lSamplesInfo[irf.key()].freq)
@@ -377,16 +388,35 @@ bool Container::load(QByteArray data, bool append)
                 return false;
             }
         }
-
+        // dodaje nowe dane na koncu aktualnych danych
+        brakujacychRamek = iterator - lastIterator - 1;
+        if(brakujacychRamek > 0)
+        {
+            if(brakujacychRamek > 1440) // 2 godziny
+            {
+                qDebug() << "Utracono " << brakujacychRamek
+                         << " ramek. Transmisja zakończona";
+                return false;
+            }
+            qDebug() << QDateTime::currentDateTime().toString("HH:mm:ss")
+                     << "Utracono " << brakujacychRamek << " ramek";
+        }
         for (ir = samples.begin(); ir != samples.end(); ++ir)
         {
             tab = ir.value();
+            if(brakujacychRamek > 0)
+            {
+                // uzupelnia zerami sygnal w przypadku straty ramki
+                // liczba elementow = freq * 5 * liczbaBrakujacychRamek
+                tmpTab.fill(0,samplesInfo[ir.key()].freq * 5 * brakujacychRamek);
+                tab << tmpTab;
+            }
             tab << lSamples[ir.key()];
             samples[ir.key()] = tab;
         }
         durationTime += liczbaSekund;
-
-        //qDebug() << samples.begin().value().size();
+        lastIterator = iterator;
+        if(this == current) emit currentUpdated();
 
     }
     else
@@ -398,9 +428,40 @@ bool Container::load(QByteArray data, bool append)
         samplesInfo = lSamplesInfo;
         durationTime = liczbaSekund;
         loaded = true;
+        lastIterator = iterator;
     }
 
     return true;
+}
+
+bool Container::loadFromFile(QString fileName, bool absolutePath)
+{
+    QFile file;
+    QByteArray buffer;
+
+    clear(); // remove all data from container
+
+    if(!absolutePath)
+    {
+        QSettings settings;
+        QDir dir;
+        dir.setPath(settings.value("dataDir").toString());
+        fileName = dir.absoluteFilePath(fileName);
+    }
+    file.setFileName(fileName);
+    if(file.size()> 128*1024*1024) // 128MB
+    {
+        qDebug() << "Plik jest za duzy";
+        return false;
+    }
+    if(!file.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "Nie mozna otworzyc pliku";
+        return false;
+    }
+    buffer = file.read(128*1024*1024); // 128MB
+    file.close();
+    return load(buffer);
 }
 
 void Container::clear()
@@ -495,7 +556,7 @@ bool Container::saveToFile(QString fileName)
         file.write(buffer);
 
         // sygnal
-        if(sampleInfo.sampleSize = 1)
+        if(sampleInfo.sampleSize == 1)
         {
             file.write(int16VecToByte8(ir.value()));
         }
@@ -530,6 +591,7 @@ bool Container::isLoaded()
 {
     return loaded;
 }
+
 
 
 

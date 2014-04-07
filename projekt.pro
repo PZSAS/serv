@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     networkserver.cpp \
     filepreview.cpp \
     filelisttable.cpp \
-    fileloaderthread.cpp
+    fileloaderthread.cpp \
+    signalanalyzer.cpp
 
 HEADERS  += mainwindow.h \
     connectionwidget.h \
@@ -31,7 +32,8 @@ HEADERS  += mainwindow.h \
     networkserver.h \
     filepreview.h \
     filelisttable.h \
-    fileloaderthread.h
+    fileloaderthread.h \
+    signalanalyzer.h
 
 FORMS    += mainwindow.ui \
     connectionwidget.ui \
