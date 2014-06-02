@@ -13,10 +13,6 @@
   <property name="windowTitle">
    <string>Monitor bezdechu</string>
   </property>
-  <property name="windowIcon">
-   <iconset resource="images.qrc">
-    <normaloff>:/img/icon.png</normaloff>:/img/icon.png</iconset>
-  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="0" column="0">
@@ -44,26 +40,6 @@
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionOtw_rz">
-   <property name="text">
-    <string>Otwórz</string>
-   </property>
-  </action>
-  <action name="actionZako_cz">
-   <property name="text">
-    <string>Zakończ</string>
-   </property>
-  </action>
-  <action name="actionPo_cz">
-   <property name="text">
-    <string>Połącz</string>
-   </property>
-  </action>
-  <action name="actionUstawienia">
-   <property name="text">
-    <string>Ustawienia</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -86,8 +62,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="images.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

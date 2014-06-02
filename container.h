@@ -49,6 +49,11 @@ public:
     static bool validateData(QByteArray data);
     static FileInfo fileInfo(QString fileName, bool absolutePath = false);
     static Container* getCurrent();
+    QMap<qint16, QVector<qint16> > getSamples();
+    QMap<qint16, SampleInfo> getSamplesInfo();
+    QVector<qint16> getSamplesFromIndex(qint16 idx);
+    SampleInfo getSamplesInfoFromIndex(qint16 idx);
+    bool contains(qint16 idx);
 
 public slots:
 
@@ -66,7 +71,7 @@ private:
     QDateTime startTime;
     qint32 durationTime;
     QMap<qint16, SampleInfo> samplesInfo;
-    QMap<qint16, QVector<qint16>> samples;
+    QMap<qint16, QVector<qint16> > samples;
     quint16 lastIterator;
     bool loaded;
 };

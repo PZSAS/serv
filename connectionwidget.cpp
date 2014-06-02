@@ -98,6 +98,7 @@ void ConnectionWidget::openCloseConnection()
         ui->cancelConnectButton->hide();
         updateStatus();
         Container::getCurrent()->saveToFile();
+        Container::getCurrent()->clear();
         return;
     }
     if(!ui->portListWidget->count())
@@ -274,6 +275,9 @@ void ConnectionWidget::on_cancelConnectButton_clicked()
     ui->connectButton->setText(tr("Rozpocznij zapis"));
     ui->cancelConnectButton->hide();
     updateStatus();
+    Plot *plot = new Plot(0);
+    plot->setData(Container::getCurrent(), 3);
+    plot->show();
     Container::getCurrent()->clear();
     return;
 }

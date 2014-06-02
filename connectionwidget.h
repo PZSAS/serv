@@ -10,6 +10,7 @@
 #include <QDateTime>
 
 #include "container.h"
+#include "plot.h"
 
 #define MAX_LOG_COUNT 200
 

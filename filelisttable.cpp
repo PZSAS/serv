@@ -8,9 +8,9 @@ FileListTable::FileListTable(QWidget *parent) :
     setHorizontalHeaderItem(1, new QTableWidgetItem(tr("Czas trwania")));
     setHorizontalHeaderItem(2, new QTableWidgetItem(tr("Plik")));
     setSelectionBehavior(QAbstractItemView::SelectRows);
-    insertData("plik.fmd", QDateTime(QDate(2014,3,21), QTime(6,33,45)), 8000);
-    insertData("plik.fmd", QDateTime(QDate(2014,3,21), QTime(6,33,45)), 8000);
-    insertData("plik.fmd", QDateTime(QDate(2014,3,21), QTime(6,33,45)), 8000);
+    //insertData("plik.fmd", QDateTime(QDate(2014,3,21), QTime(6,33,45)), 8000);
+    //insertData("plik.fmd", QDateTime(QDate(2014,3,21), QTime(6,33,45)), 8000);
+    //insertData("plik.fmd", QDateTime(QDate(2014,3,21), QTime(6,33,45)), 8000);
 
 
     loadFileList();

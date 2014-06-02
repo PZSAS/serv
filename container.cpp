@@ -269,15 +269,54 @@ Container *Container::getCurrent()
     return current;
 }
 
+QMap<qint16, QVector<qint16> > Container::getSamples()
+{
+    if(!loaded)
+    {
+        QMap<qint16, QVector<qint16> > empty;
+        return empty;
+    }
+    return samples;
+}
+
+QMap<qint16, SampleInfo> Container::getSamplesInfo()
+{
+    if(!loaded)
+    {
+        QMap<qint16, SampleInfo> empty;
+        return empty;
+    }
+    return samplesInfo;
+}
+
+QVector<qint16> Container::getSamplesFromIndex(qint16 idx)
+{
+    return samples.value(idx);
+}
+
+SampleInfo Container::getSamplesInfoFromIndex(qint16 idx)
+{
+    return samplesInfo.value(idx);
+}
+
+
+
+bool Container::contains(qint16 idx)
+{
+    return (samplesInfo.contains(idx) && samples.contains(idx));
+}
+
+
+
 bool Container::load(QByteArray &data, bool append)
 {
     QDateTime startTime;
     QMap<qint16, SampleInfo> lSamplesInfo;
-    QMap<qint16, QVector<qint16>> lSamples;
+    QMap<qint16, QVector<qint16> > lSamples;
     QVector<qint16> tab;
     QVector<qint16> tmpTab;
     QMap<qint16, SampleInfo>::iterator irf;
-    QMap<qint16, QVector<qint16>>::iterator ir;
+    QMap<qint16, QVector<qint16> >::iterator ir;
 
 
     QByteArray pattern;
@@ -481,7 +520,7 @@ bool Container::saveToFile(QString fileName)
 
     qint32 rozmiarPliku;
     SampleInfo sampleInfo;
-    QMap<qint16, QVector<qint16>>::iterator ir;
+    QMap<qint16, QVector<qint16> >::iterator ir;
 
     if(fileName.length() < 1)
     {
