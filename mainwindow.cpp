@@ -13,3 +13,9 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    e->accept();
+    QApplication::exit(0);
+}

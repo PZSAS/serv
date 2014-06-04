@@ -24,6 +24,7 @@ public slots:
 
 public:
     bool setData(Container *data, qint16 idx);
+    bool setData(QVector<qint16> data);
 
 protected:
     void paintEvent(QPaintEvent *);
@@ -33,6 +34,7 @@ protected:
     qint32 durationTime;
     SampleInfo samplesInfo;
     QVector<qint16> samples;
+    qint32 minVal, maxVal;
     int vLines;
     bool loaded;
 

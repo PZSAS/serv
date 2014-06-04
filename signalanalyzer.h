@@ -45,6 +45,8 @@ public:
     QList<EventInfo> getEvents() const;
     QList<EventInfo> getEvents(qint16 type);
 
+    QMap<qint16, StatInfo> getStats() const;
+
 private:
     static QMap<qint16, QString> initSignalType();
     static QMap<qint16, QString> initEventType();

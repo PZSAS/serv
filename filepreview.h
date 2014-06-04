@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <QFileDialog>
+#include <QMessageBox>
 #include "analyzewindow.h"
 
 namespace Ui {
@@ -17,10 +18,11 @@ class FilePreview : public QMainWindow
 
 public:
     explicit FilePreview(QWidget *parent = 0);
+    void closeAllAnalyzeWindows();
     ~FilePreview();
 
 private:
-    void showFileInfo(QString fileName = QString());
+    void showFileInfo(QString fileName = QString(), SignalAnalyzer *s = NULL);
 
 private slots:
 
@@ -29,6 +31,8 @@ private slots:
 
 private:
     Ui::FilePreview *ui;
+    bool updateInfo;
+    int lastX;
 };
 
 #endif // FILEPREVIEW_H

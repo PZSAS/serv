@@ -3,28 +3,45 @@
 AnalyzeWindow::AnalyzeWindow(Container *data, SignalAnalyzer *infoData, QWidget *parent) :
     QMainWindow(parent)
 {
+    instances++;
     this->data = data;
     this->infoData = infoData;
+
+
     makeGUI();
+    setMinimumSize(700, 400);
     resize(800, 600);
     updateEventWidget();
 }
 
 AnalyzeWindow::~AnalyzeWindow()
 {
+    instances--;
+}
 
+void AnalyzeWindow::close()
+{
+    closeEvent(new QCloseEvent());
+}
+
+int AnalyzeWindow::instancesCount()
+{
+    return instances;
 }
 
 void AnalyzeWindow::closeEvent(QCloseEvent *e)
 {
     e->accept();
+    delete infoData;
     this->deleteLater();
 }
 
 void AnalyzeWindow::makeGUI()
 {
-    // nie dziala, naprawic
-    QHBoxLayout *mainLayout = new QHBoxLayout;
+    int i, sigCount;
+    QList<qint16> signalsIdx;
+
+    QVBoxLayout *mainLayout = new QVBoxLayout;
     QWidget *mainWidget = new QWidget;
 
     eventTypeWidget = new QComboBox;
@@ -39,10 +56,22 @@ void AnalyzeWindow::makeGUI()
     dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     dockWidget->setWidget(dockLayoutWidget);
     dockWidget->setFeatures(QDockWidget::DockWidgetMovable);
+    dockWidget->setSizeIncrement(0,0);
 
-    plot = new Plot();
-    plot->setData(data, 3);
-    mainLayout->addWidget(plot);
+
+    signalsIdx = data->getSamplesInfo().keys();
+    sigCount = signalsIdx.size();
+    for(i=0;i<sigCount;i++)
+    {
+        if(i>MAX_PLOT_COUNT) break;
+        plot[i] = new Plot();
+        plot[i]->setData(data->getSamplesFromIndex(signalsIdx.value(i)));
+        //plot[i]->setData(data, signalsIdx.value(i));
+        mainLayout->addWidget(plot[i]);
+    }
+//    plot[0] = new Plot();
+//    plot[0]->setData(data, 3);
+//    mainLayout->addWidget(plot);
     mainWidget->setLayout(mainLayout);
     this->setCentralWidget(mainWidget);
     this->addDockWidget(Qt::RightDockWidgetArea, dockWidget);
@@ -50,7 +79,6 @@ void AnalyzeWindow::makeGUI()
 
 void AnalyzeWindow::updateEventWidget()
 {
-    QList<qint16> eventTypes;
     QList<EventInfo> events;
     QString val;
     QTime time;
@@ -113,5 +141,12 @@ void AnalyzeWindow::changeEventType(int idx)
     }
 }
 
+void AnalyzeWindow::setPlotCount(int count)
+{
+    if(count < 0) plotCount = 0;
+    else if(count > MAX_PLOT_COUNT) plotCount = MAX_PLOT_COUNT;
+    else plotCount = count;
+}
 
+int AnalyzeWindow::instances=0;
 

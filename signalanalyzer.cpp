@@ -135,7 +135,6 @@ bool SignalAnalyzer::loadFromFile(QString fileName, bool absolutePath)
     }
     file.close();
     loaded = true;
-
     return true;
 }
 
@@ -218,6 +217,13 @@ QMap<qint16, QString> SignalAnalyzer::initEventType()
     map.insert(3, tr("Bezdech"));
     return map;
 }
+QMap<qint16, StatInfo> SignalAnalyzer::getStats() const
+{
+    return stats;
+}
+
+
+
 QList<EventInfo> SignalAnalyzer::getEvents() const
 {
     return events;
