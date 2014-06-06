@@ -15,7 +15,7 @@ FilePreview::FilePreview(QWidget *parent) :
 
     connect(ui->refreshListButton, SIGNAL(clicked()), ui->fileListTable, SLOT(loadFileList()));
     connect(ui->fileListTable, SIGNAL(cellClicked(int,int)), this, SLOT(previewFileChanged(int,int)));
-    //connect(ui->fileListTable, SIGNAL(cellDoubleClicked(int,int))
+    connect(ui->fileListTable, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(openAnalyzeWindow(int,int)));
 }
 
 FilePreview::~FilePreview()
@@ -35,7 +35,7 @@ void FilePreview::showFileInfo(QString fileName, SignalAnalyzer *s)
         return;
     }
     info.append(tr("Nazwa pliku: "));
-    info.append(fileName + "\n");
+    info.append(fileName + "\n\n");
 
     stats = s->getStats();
     keys = stats.keys();
@@ -58,6 +58,28 @@ void FilePreview::showFileInfo(QString fileName, SignalAnalyzer *s)
     }
 
     ui->infoLabel->setText(info);
+}
+
+void FilePreview::openAnalyzeWindow(int x, int y)
+{
+    Q_UNUSED(y);
+    if(ui->fileListTable->item(x, 2) == NULL) return;
+    QString fileName = ui->fileListTable->item(x, 2)->text();
+
+
+    // pozwol na gora 3 otwarte okna
+    if(AnalyzeWindow::instancesCount() > 2) return;
+
+    Container *c = new Container();
+    c->loadFromFile(fileName);
+
+    SignalAnalyzer *s = new SignalAnalyzer;
+    s->loadFromFile(fileName.left(fileName.size()-4).append(".fad"));
+
+
+
+    AnalyzeWindow *w = new AnalyzeWindow(c, s);
+    w->show();
 }
 
 

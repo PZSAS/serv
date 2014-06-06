@@ -28,6 +28,7 @@ private slots:
 
     void on_changeDataDirLabel_clicked();
     void previewFileChanged(int x, int y);
+    void openAnalyzeWindow(int x, int y);
 
 private:
     Ui::FilePreview *ui;

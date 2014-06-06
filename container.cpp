@@ -38,6 +38,23 @@ quint8 Container::byteToUInt8(QByteArray &data)
     return *number;
 }
 
+QByteArray Container::int32ToByteBE(qint32 number)
+{
+
+    QByteArray data;
+    void *p;
+    char *c;
+    p = &number;
+    c = static_cast <char *> (p);
+    data.append(c[3]);
+    data.append(c[2]);
+    data.append(c[1]);
+    data.append(c[0]);
+    return data;
+
+
+}
+
 QByteArray Container::int32ToByte(qint32 number)
 {
     QByteArray data;
@@ -144,6 +161,33 @@ QVector<qint16> Container::data8ToInt16Vec(QByteArray &data)
     {
         number = *t;
         tab[i] = (qint16) number;
+        t++;
+    }
+    return tab;
+}
+
+QVector<quint8> Container::data8ToInt8Vec(QByteArray &data)
+{
+    QVector<quint8> tab;
+    int max, i;
+    quint8 *t;
+    quint8 number;
+    char *d;
+    void *v;
+    if(data.size() % 2 == 1)
+    {
+        qDebug() << "zle dane";
+        return tab;
+    }
+    max = data.size();
+    tab.resize(max);
+    d = data.data();
+    v = d;
+    t = static_cast <quint8 *> (v);
+    for(i=0;i<max;i++)
+    {
+        number = *t;
+        tab[i] = (qint8) number;
         t++;
     }
     return tab;

@@ -5,7 +5,9 @@ Plot::Plot(QWidget *parent) :
 {
     loaded = false;
     vLines = 8;
-    setMinimumSize(300, 200);
+    setMinimumSize(200, 200);
+    setMaximumHeight(200);
+    setCursor(Qt::SizeHorCursor);
 }
 
 Plot::~Plot()
@@ -41,15 +43,18 @@ bool Plot::setData(Container *data, qint16 idx)
         if(samples[i] < minVal) minVal = samples[i];
         else if(samples[i] > maxVal) maxVal = samples[i];
     }
+
+
     loaded = true;
     return true;
 }
 
-bool Plot::setData(QVector<qint16> data)
+bool Plot::setData(QVector<qint16> data, int durationTime)
 {
     int i, size;
     size = data.size();
     if(size < 1) return false;
+    this->durationTime = durationTime;
     samples = data;
     minVal = samples[0];
     maxVal = samples[0];
@@ -58,20 +63,35 @@ bool Plot::setData(QVector<qint16> data)
         if(samples[i] < minVal) minVal = samples[i];
         else if(samples[i] > maxVal) maxVal = samples[i];
     }
+
+    // przesun wykres na dol i daj odstep 4px
+    for(i=0;i<size;i++)
+    {
+        samples[i] -= minVal - 4;
+    }
+
     loaded = true;
     return true;
+}
+
+void Plot::setEvents(QList<EventInfo> events)
+{
+    this->events = events;
+    repaint();
 }
 
 void Plot::paintEvent(QPaintEvent *)
 {
 
     if(!loaded) return;
+    QColor color;
     int w = geometry().width();
     int h = geometry().height();
     int max = samples.count();
-    int i;
+    int i, size;
     int hTmp;
     float step = (float)w/(float)max;
+    float eS, eD, dF;
     QPen pen;
 
     QPainter painter;
@@ -79,7 +99,6 @@ void Plot::paintEvent(QPaintEvent *)
 
     // biale tlo
     painter.fillRect(QRect(QPoint(0,0), geometry().size()), Qt::white);
-    painter.fillRect(QRect(QPoint(), QPoint(20, h)), Qt::gray);
 
     // siatka
     pen.setColor(Qt::gray);
@@ -90,15 +109,6 @@ void Plot::paintEvent(QPaintEvent *)
     {
             painter.drawLine(0, i*hTmp, w, i*hTmp);
     }
-    // nie robi w jednej petli zeby
-    // nie przelaczac co chwile pedzla
-    painter.setPen(Qt::black);
-    for(i=1;i<vLines;i++)
-    {
-            painter.drawLine(0, i*hTmp, 20, i*hTmp);
-    }
-
-    //painter.setRenderHint(QPainter::Antialiasing);
 
 
     painter.setPen(Qt::SolidLine);
@@ -112,10 +122,22 @@ void Plot::paintEvent(QPaintEvent *)
         painter.drawLine(i*step, h-samples[i], (i+1)*step, h-samples[i+1]);
     }
 
+    size = events.size();
+    if(size > 0)
+    {
+        dF = durationTime*1000.0;
+        for(i=0;i<size;i++)
+        {
+            color = QColor(255,0,0,100);
+            if(events.at(i).type == 2) color = QColor(0,255,0,100);
+            eS = events.at(i).startTime/dF;
+            eD = eS + (events.at(i).durationTime/dF);
+            painter.fillRect(QRectF(QPointF(eS*w, 0), QPointF(eD*w, h)),color);
+        }
+    }
 
 
     painter.end();
-    QByteArray zz;
 }
 
 

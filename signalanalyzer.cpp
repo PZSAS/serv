@@ -74,7 +74,7 @@ bool SignalAnalyzer::loadFromFile(QString fileName, bool absolutePath)
     fileSize = fileInfo.size();
     if(fileSize < 14)
     {
-        qDebug() << "plik nie istnieje";
+        qDebug() << "plik analizy danych nie istnieje";
         return false;
     }
     if(((fileSize-14)%10 != 0))
@@ -172,7 +172,7 @@ QStringList SignalAnalyzer::listOfTypes()
     {
         // jezeli typ jest nie znany to pomin
         if(types.indexOf(keys.at(i)) < 0) continue;
-        list.append(signalTypes.value(keys.at(i)));
+        list.append(eventTypes.value(keys.at(i)));
     }
     return list;
 }

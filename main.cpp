@@ -2,6 +2,9 @@
 #include <QApplication>
 #include "plot.h"
 #include "signalanalyzer.h"
+#include "connection.h"
+
+#include <QTimer>
 
 int main(int argc, char *argv[])
 {
@@ -16,8 +19,18 @@ int main(int argc, char *argv[])
     //SignalAnalyzer q;
     //qDebug() << q.loadFromFile("04luty.fad");
     //return 0 ;
-    MainWindow w;
-    w.show();
+//    MainWindow w;
+//    w.show();
+
+    Connection c;
+    c.setPortName("COM7");
+    qDebug() << c.open();
+    qDebug() << c.setChannel(1);
+    qDebug() << c.setChunkSize(5000000);
+    qDebug() << c.setChunkSize(100);
+    c.initReadChannel();
+
+    QTimer::singleShot(5000, qApp, SLOT(quit()));
 
     return a.exec();
 }

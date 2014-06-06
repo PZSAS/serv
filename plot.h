@@ -7,6 +7,7 @@
 #include <QMouseEvent>
 
 #include "container.h"
+#include "signalanalyzer.h"
 
 
 
@@ -24,12 +25,13 @@ public slots:
 
 public:
     bool setData(Container *data, qint16 idx);
-    bool setData(QVector<qint16> data);
+    bool setData(QVector<qint16> data, int durationTime);
+    void setEvents(QList<EventInfo> events);
 
 protected:
     void paintEvent(QPaintEvent *);
 
-
+    QList<EventInfo> events;
     QDateTime startTime;
     qint32 durationTime;
     SampleInfo samplesInfo;

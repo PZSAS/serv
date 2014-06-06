@@ -39,6 +39,7 @@ public:
     static qint32 byteToInt32(QByteArray &data);
     static qint16 byteToInt16(QByteArray &data);
     static quint8 byteToUInt8(QByteArray &data);
+    static QByteArray int32ToByteBE(qint32 number);
     static QByteArray int32ToByte(qint32 number);
     static QByteArray int16ToByte(qint16 number);
     static QByteArray uint8ToByte(quint8 number);
@@ -46,6 +47,8 @@ public:
     static QByteArray int16VecToByte16(QVector<qint16> tab);
     static QVector<qint16> dataToInt16Vec(QByteArray &data);
     static QVector<qint16> data8ToInt16Vec(QByteArray &data);
+    static QVector<quint8> data8ToInt8Vec(QByteArray &data);
+
     static bool validateData(QByteArray data);
     static FileInfo fileInfo(QString fileName, bool absolutePath = false);
     static Container* getCurrent();

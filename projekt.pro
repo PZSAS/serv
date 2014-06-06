@@ -24,7 +24,8 @@ SOURCES += main.cpp\
     fileloaderthread.cpp \
     signalanalyzer.cpp \
     plot.cpp \
-    analyzewindow.cpp
+    analyzewindow.cpp \
+    connection.cpp
 
 HEADERS  += mainwindow.h \
     connectionwidget.h \
@@ -37,7 +38,8 @@ HEADERS  += mainwindow.h \
     fileloaderthread.h \
     signalanalyzer.h \
     plot.h \
-    analyzewindow.h
+    analyzewindow.h \
+    connection.h
 
 FORMS    += mainwindow.ui \
     connectionwidget.ui \

@@ -33,12 +33,13 @@ void AnalyzeWindow::closeEvent(QCloseEvent *e)
 {
     e->accept();
     delete infoData;
+    delete data;
     this->deleteLater();
 }
 
 void AnalyzeWindow::makeGUI()
 {
-    int i, sigCount;
+    int i;
     QList<qint16> signalsIdx;
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -60,18 +61,27 @@ void AnalyzeWindow::makeGUI()
 
 
     signalsIdx = data->getSamplesInfo().keys();
-    sigCount = signalsIdx.size();
-    for(i=0;i<sigCount;i++)
+    plotCount = signalsIdx.size();
+    for(i=0;i<plotCount;i++)
     {
         if(i>MAX_PLOT_COUNT) break;
         plot[i] = new Plot();
-        plot[i]->setData(data->getSamplesFromIndex(signalsIdx.value(i)));
+        plot[i]->setData(data->getSamplesFromIndex(signalsIdx.value(i)), data->getDurationTime());
         //plot[i]->setData(data, signalsIdx.value(i));
         mainLayout->addWidget(plot[i]);
     }
+    //tymczasowo
+    if(plotCount<2)
+    {
+        mainLayout->addItem( new QSpacerItem(40, 300, QSizePolicy::Expanding, QSizePolicy::Minimum));
+    }
+
 //    plot[0] = new Plot();
 //    plot[0]->setData(data, 3);
 //    mainLayout->addWidget(plot);
+
+
+
     mainWidget->setLayout(mainLayout);
     this->setCentralWidget(mainWidget);
     this->addDockWidget(Qt::RightDockWidgetArea, dockWidget);
@@ -102,7 +112,11 @@ void AnalyzeWindow::updateEventWidget()
                 QString::number(events.value(i).durationTime/1000.0) + ")";
         eventListWidget->addItem(val);
     }
-
+    for(i=0;i<plotCount;i++)
+    {
+        if(i>MAX_PLOT_COUNT) break;
+        plot[i]->setEvents(events);
+    }
     connect(eventTypeWidget, SIGNAL(currentIndexChanged(int)), this, SLOT(changeEventType(int)));
 }
 
@@ -138,6 +152,11 @@ void AnalyzeWindow::changeEventType(int idx)
         val = time.toString("hh:mm:ss") + " (" +
                 QString::number(events.value(i).durationTime/1000.0) + ")";
         eventListWidget->addItem(val);
+    }
+    for(i=0;i<plotCount;i++)
+    {
+        if(i>MAX_PLOT_COUNT) break;
+        plot[i]->setEvents(events);
     }
 }
 
