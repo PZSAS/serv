@@ -27,10 +27,10 @@ int main(int argc, char *argv[])
     qDebug() << c.open();
     qDebug() << c.setChannel(1);
     qDebug() << c.setChunkSize(5000000);
-    qDebug() << c.setChunkSize(100);
+    qDebug() << c.setChunkSize(200000);
     c.initReadChannel();
 
-    QTimer::singleShot(5000, qApp, SLOT(quit()));
+    //QTimer::singleShot(5000, qApp, SLOT(quit()));
 
     return a.exec();
 }

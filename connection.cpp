@@ -1,5 +1,13 @@
 #include "connection.h"
 
+
+/* todo
+- polaczyc z kontenerem
+- polaczyc z widzetem
+- uzupelnianie probek
+
+*/
+
 Connection::Connection(QObject *parent) :
     QObject(parent)
 {
@@ -62,17 +70,18 @@ void Connection::initReadChannel(int channel, int probes)
     if(this->channel != channel) this->channel = channel;
     if(chunkSize != probes) chunkSize = probes;
 
-    data.append('a'); // a
-    data.append(ch); // kanal
+    data.append('a');
+    data.append(ch);
     data.append(Container::int32ToByteBE(probes)); // ilosc probek
-    data.append('k'); // k
+    data.append('k');
 
     newRequest = true;
     buffer.clear();
     header.clear();
     rawSamples.clear();
+    samples.clear();
+    time.start();
     port->write(data);
-
 }
 
 void Connection::handleWithSamples()
@@ -106,9 +115,63 @@ void Connection::handleWithSamples()
     samples << newSamples;
 }
 
+void Connection::endReading()
+{
+    QString str = QString::fromLocal8Bit(buffer.mid(buffer.size()-4));
+    float elapsed;
+    int freq, s, sb, i;
+    if(str != "STOP")
+    {
+        emit log(tr("Brak potwierdzenia stopu"), 0);
+        qDebug() << "stop";
+    }
+    if(buffer.size() > 4)
+    {
+        buffer = buffer.mid(0, buffer.size()-4);
+        handleWithSamples();
+    }
+    emit log(tr("Zakończono odczyt paczki danych"), 0);
+
+    // dodaj lub usun probki
+    freq = 100;
+    if(channel == 3) freq = 500; //mikrofon
+    elapsed = time.elapsed() / 1000.0;
+    s = samples.size(); // ile jest
+    sb = qRound(elapsed*freq); // ile powinno być
+    if(s < sb) // jezeli jest za malo
+    {
+        // petla od dolu
+        for(i=0;i<sb;i++)
+        {
+
+        }
+    }
+    else if(s > sb) // jezeli jest za duzo
+    {
+        // petla z gory
+        for(i=sb-1;i>0;i--)
+        {
+
+        }
+    }
+
+
+    initReadChannel();
+
+}
+
+void Connection::checkHeader()
+{
+    QString str = QString::fromLocal8Bit(header.mid(0, 4));
+    if(str != "DATA")
+    {
+        emit log(tr("Odebrano nieprawidłowy nagłówek"), 0);
+    }
+}
+
 void Connection::initReadChannel()
 {
-    initReadChannel(channel, chunkSize);
+    initReadChannel(channel, chunkSize); // poprawic
 }
 
 bool Connection::setChannel(int channel)
@@ -127,9 +190,9 @@ int Connection::setChunkSize(int size)
         chunkSize = 10000;
     else if(size <= 100000) // 100 tys
         chunkSize = 100000;
-    else if(size <= 2000000) // 200 tys
+    else if(size <= 200000) // 200 tys
         chunkSize = 200000;
-    else if(size <= 5000000) // 500 tys
+    else if(size <= 500000) // 500 tys
         chunkSize = 500000;
     else
         chunkSize = 1000000; // milion
@@ -143,31 +206,30 @@ void Connection::readData()
     {
         buffer += port->readAll();
         // czeka na wczytanie calego naglowka
-        if(buffer.size() < 22) return;
+        if(buffer.size() < 18) return;
 
         // zapisuje naglowek i przechodzi dalej
         header = buffer.mid(0, 18);
-        buffer = buffer.mid(18);
+        checkHeader();
         samplesRead = buffer.size();
+        buffer = buffer.mid(18);
         newRequest = false;
-        return;
     }
     else
     {
         data = port->readAll();
         samplesRead += data.size();
         buffer += data;
-        qDebug() << samplesRead << (chunkSize+18);
-        if(samplesRead >= (chunkSize+18))
-        {
-            qDebug() << "koniec";
-            return;
-        }
-        if(buffer.size() >= 4096)
+        if(buffer.size() >= 4096 && samplesRead < (chunkSize+18))
         {
             rawSamples = Container::data8ToInt8Vec(buffer.mid(0, 4096));
             buffer = buffer.mid(4096);
             handleWithSamples();
         }
     }
+    if(samplesRead >= (chunkSize+22))
+    {
+        endReading();
+    }
+
 }
