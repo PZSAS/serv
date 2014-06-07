@@ -14,7 +14,7 @@
 #include "connection.h"
 #include "signalanalyzer.h"
 
-#define MAX_LOG_COUNT 200
+#define MAX_LOG_COUNT 2000
 
 
 namespace Ui {
@@ -30,18 +30,17 @@ public:
     ~ConnectionWidget();
 
 private slots:
-    void updateStatus();
     void updatePortList();
     void openCloseConnection();
     void on_cancelConnectButton_clicked();
     void onOpened();
     void onClosed();
     void log(QString message, int level=0);
+    void updatePlot();
 
 private:
 
     void closeConnection();
-    void updateState(QString state, QString value = QString());
 
 
 

@@ -5,9 +5,8 @@ Plot::Plot(QWidget *parent) :
 {
     loaded = false;
     vLines = 8;
-    setMinimumSize(200, 200);
-    setMaximumHeight(200);
-    setCursor(Qt::SizeHorCursor);
+    //setMinimumSize(200, 200);
+    //setCursor(Qt::SizeHorCursor);
 }
 
 Plot::~Plot()
@@ -64,11 +63,12 @@ bool Plot::setData(QVector<qint16> data, int durationTime)
         else if(samples[i] > maxVal) maxVal = samples[i];
     }
 
-    // przesun wykres na dol i daj odstep 4px
-    for(i=0;i<size;i++)
-    {
-        samples[i] -= minVal - 4;
-    }
+
+//    for(i=0;i<size;i++)
+//    {
+//        if(samples[i] < 0) samples[i] = 0;
+
+//    }
 
     loaded = true;
     return true;
@@ -92,6 +92,7 @@ void Plot::paintEvent(QPaintEvent *)
     int hTmp;
     float step = (float)w/(float)max;
     float eS, eD, dF;
+    float ratio;
     QPen pen;
 
     QPainter painter;
@@ -116,10 +117,11 @@ void Plot::paintEvent(QPaintEvent *)
 
     //painter.drawRect(0, 0, w-1, h-1);
 
+    ratio = h/256.0;
     max--;
     for(i=0; i<max; i++)
     {
-        painter.drawLine(i*step, h-samples[i], (i+1)*step, h-samples[i+1]);
+        painter.drawLine(i*step, h-(samples[i]*ratio), (i+1)*step, h-(samples[i+1]*ratio));
     }
 
     size = events.size();
@@ -135,8 +137,8 @@ void Plot::paintEvent(QPaintEvent *)
             painter.fillRect(QRectF(QPointF(eS*w, 0), QPointF(eD*w, h)),color);
         }
     }
-
-
+    painter.setPen(Qt::black);
+    painter.drawRect(0, 0, w-1, h-1);
     painter.end();
 }
 

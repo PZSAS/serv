@@ -11,7 +11,7 @@
 #include "networkthread.h"
 
 
-#define MAX_LOG_COUNT 200
+#define MAX_LOG_COUNT 2000
 #define MAX_PEER_HISTORY 50
 
 namespace Ui {

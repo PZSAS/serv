@@ -14,6 +14,9 @@
 #define INTERVAL 4096
 #define FREQ 100
 #define MIC_FREQ 500
+#define MIC 3
+#define LAST_SAMPLES_SIZE 8192
+#define Nmask (LAST_SAMPLES_SIZE-1)
 
 class Connection : public QObject
 {
@@ -30,8 +33,10 @@ public:
     void startRecording();
     void stopAndSave();
     bool isOpen();
+    void sendCommand(int conf);
     bool setChannel(int channel);
     int  setChunkSize(int size);
+    QVector<qint16> getLastSamples(int size);
 
 private:
     void initReadChannel(int channel, int probes);
@@ -62,6 +67,8 @@ private:
     QTimer *timer;
     QTime time;
     QTime lastRead;
+    quint8 lastSamples[LAST_SAMPLES_SIZE];
+    int ln;
     bool newRequest;
     bool started;
     int samplesRead;

@@ -13,17 +13,17 @@ ConnectionWidget::ConnectionWidget(QWidget *parent) :
     updatePortList();
     ui->channelWidget->addItems(SignalAnalyzer::listOfSignals());
     if(ui->channelWidget->count() > 1)ui->channelWidget->setCurrentIndex(1);
+    ui->plot->setData(QVector<qint16>(20), 10);
 
 
     // timer
     timer = new QTimer(this);
-    timer->setInterval(1000);
-    timer->start();
+    timer->setInterval(500);
 
     // connections
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateStatus()));
     connect(ui->updatePortListButton, SIGNAL(clicked()), this, SLOT(updatePortList()));
     connect(ui->connectButton, SIGNAL(clicked()), this, SLOT(openCloseConnection()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(updatePlot()));
 
     connect(connection, SIGNAL(closed()), this, SLOT(onClosed()));
     connect(connection, SIGNAL(opened()), this, SLOT(onOpened()));
@@ -39,36 +39,7 @@ ConnectionWidget::~ConnectionWidget()
     delete ui;
 }
 
-void ConnectionWidget::updateStatus()
-{
-//    if(!this->isVisible()) return;
-//    // uaktualnienie statusu
 
-//    if(!port->isOpen())
-//    {
-//        if(!isVisible()) return;
-//        updateState("connection");
-//        updateState("dataTransfer", "--");
-//        updateState("deviceTime", "--");
-//        updateState("startTime", "--");
-//        updateState("elapsedTime");
-//        return;
-//    }
-//    updateState("elapsedTime");
-//    if((QDateTime::currentDateTime().toTime_t() - lastTransferTime) > 12)
-//    {
-//        QString err;
-//        err.append(tr("Nie otrzymano danych od "));
-//        err.append(QString::number(QDateTime::currentDateTime().toTime_t()-lastTransferTime));
-//        err.append(tr(" sekund"));
-//        if(showTransferError)
-//        {
-//            log(tr("Brak transmisji danych"), 3);
-//            showTransferError = false;
-//        }
-//        updateState("dataTransfer", err);
-//    }
-}
 
 void ConnectionWidget::updatePortList()
 {
@@ -138,68 +109,30 @@ void ConnectionWidget::log(QString message, int level)
     ui->logList->scrollToBottom();
 }
 
-void ConnectionWidget::updateState(QString state, QString value)
+void ConnectionWidget::updatePlot()
 {
-//    if(state == "connection")
-//    {
-//        value = tr("Połączony: ");
-//        if(port->isOpen())
-//            value.append(tr("TAK"));
-//        else
-//            value.append(tr("NIE"));
-//        ui->connectionStateLabel->setText(value);
-//    }
-//    else if(state == "dataTransfer")
-//    {
-//        ui->dataTransferLabel->setText(tr("Transfer danych: ").append(value));
-//    }
-//    else if(state == "deviceTime")
-//    {
-//        value = tr("Czas urządzenia: ").append(value);
-//        ui->deviceTimeLabel->setText(value);
-//    }
-//    else if(state == "startTime")
-//    {
-//        value = tr("Czas rozpoczęcia: ");
-//        if(port->isOpen()) value.append(startTime.toString("HH:mm:ss"));
-//        else value.append("--");
-//        ui->startTimeLabel->setText(value);
-//    }
-//    else if(state == "elapsedTime")
-//    {
-//        value = tr("Czas pomiaru: ");
-//        if(!port->isOpen())
-//        {
-//            value.append("--");
-//            ui->elapsedTime->setText(value);
-//            return;
-//        }
-//        int tmp, h, m, s;
-//        tmp = startTime.secsTo(QDateTime::currentDateTime());
-//        s = tmp%60;
-//        tmp = (tmp-s)/60;
-//        m = tmp%60;
-//        h = (tmp-m)/60;
-//        if(h) value.append(QString::number(h)).append(":");
-//        if(m>0 && m<10) value.append("0");
-//        if(m) value.append(QString::number(m)).append(":");
-//        if(s<10) value.append("0");
-//        if(s==0) value.append("0");
-//        if(s) value.append(QString::number(s));
-//        ui->elapsedTime->setText(value);
-//    }
+    ui->plot->setData(connection->getLastSamples(5000), 50);
+    ui->plot->repaint();
 }
+
+
 
 void ConnectionWidget::onOpened()
 {
     ui->connectButton->setText(tr("Zakończ i zapisz"));
     ui->cancelConnectButton->show();
+    ui->portListWidget->setEnabled(false);
+    ui->channelWidget->setEnabled(false);
+    timer->start();
 }
 
 void ConnectionWidget::onClosed()
 {
+    timer->stop();
     ui->connectButton->setText(tr("Rozpocznij zapis"));
     ui->cancelConnectButton->hide();
+    ui->portListWidget->setEnabled(true);
+    ui->channelWidget->setEnabled(true);
 }
 
 

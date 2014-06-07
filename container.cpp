@@ -570,7 +570,7 @@ void Container::addSamples(QVector<quint8> sig)
     samples[key] << tmp;
 
     float freq = 100;
-    if(key == 3) freq = 500;
+    if(key == 2) freq = 500;
     durationTime = samples[key].size() / freq;
 }
 

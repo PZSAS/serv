@@ -1,15 +1,12 @@
 #include "connection.h"
 
 
-/* todo
-- polaczyc z kontenerem
-- polaczyc z widzetem
 
-*/
 
 Connection::Connection(QObject *parent) :
     QObject(parent)
 {
+    int i;
     port = new QSerialPort();
 
     timer = new QTimer(this);
@@ -21,6 +18,9 @@ Connection::Connection(QObject *parent) :
     channel = 1;
 
     rawSamples.reserve(8192);
+
+    ln = 0;
+    for(i=0;i<LAST_SAMPLES_SIZE;i++) lastSamples[i] = 0;
 
     connect(port, SIGNAL(readyRead()), this, SLOT(readData()));
     connect(timer, SIGNAL(timeout()), this, SLOT(checkConnection()));
@@ -59,6 +59,7 @@ bool Connection::open()
 bool Connection::close()
 {
     port->close();
+    started = false;
     emit closed();
     emit log(tr("Rozłączono"), 0);
     return true;
@@ -84,6 +85,7 @@ void Connection::initReadChannel(int channel, int probes)
     data.append(Container::int32ToByteBE(probes)); // ilosc probek
     data.append('k');
 
+
     newRequest = true;
     started = true;
     samplesRead = 0;
@@ -105,7 +107,7 @@ void Connection::handleWithSamples()
     int freq = FREQ;
     qint64 sum;
 
-    if(channel == 3) freq = MIC_FREQ; // mikrofon
+    if(channel == MIC) freq = MIC_FREQ; // mikrofon
 
     sum = 0;
     size = rawSamples.size();
@@ -127,6 +129,14 @@ void Connection::handleWithSamples()
     }
 
     samples << newSamples;
+
+    size = newSamples.size();
+    for(i=0;i<size;i++)
+    {
+        ++ln;
+        ln = ln & Nmask;
+        lastSamples[ln] = newSamples[i];
+    }
 }
 
 void Connection::endReading(bool cont)
@@ -148,7 +158,7 @@ void Connection::endReading(bool cont)
 
 
     freq = FREQ;
-    if(channel == 3) freq = MIC_FREQ; //mikrofon
+    if(channel == MIC) freq = MIC_FREQ; //mikrofon
     elapsed = time.elapsed() / 1000.0;
     s = samples.size(); // ile jest
     sb = qRound(elapsed*freq); // ile powinno być
@@ -205,7 +215,7 @@ void Connection::prepareContainer()
     SampleInfo info;
     info.sampleSize = 1;
     info.freq = FREQ;
-    if(channel == 3) info.freq = MIC_FREQ;
+    if(channel == MIC) info.freq = MIC_FREQ;
 
     Container::getCurrent()->clear();
     Container::getCurrent()->loadHeaders(channel, info);
@@ -218,9 +228,13 @@ void Connection::initReadChannel()
 
 void Connection::startRecording()
 {
+    int i;
     if(!open()) return;
+    // czysc bufor kolowy (dla wykresu)
+    for(i=0;i<LAST_SAMPLES_SIZE;i++) lastSamples[i] = 0;
     prepareContainer();
     initReadChannel();
+
 }
 
 void Connection::stopAndSave()
@@ -238,6 +252,22 @@ void Connection::stopAndSave()
 bool Connection::isOpen()
 {
     return port->isOpen();
+}
+
+void Connection::sendCommand(int conf)
+{
+    QByteArray data;
+    char ch = conf;
+    if(!port->isOpen())
+    {
+        qDebug() << "Nie można wysłać polecenia. Port zamknięty";
+        return;
+    }
+    data.append('w');
+    data.append(ch);
+    data.append('k');
+    port->write(data);
+    emit log(tr("Wysłano komendę ") + QString::number((int)ch, 16), 0);
 }
 
 bool Connection::setChannel(int channel)
@@ -263,6 +293,21 @@ int Connection::setChunkSize(int size)
     else
         chunkSize = 1000000; // milion
     return chunkSize;
+}
+
+QVector<qint16> Connection::getLastSamples(int size)
+{
+    QVector<qint16> tab;
+    int i, idx;
+    if(size >= LAST_SAMPLES_SIZE) size = LAST_SAMPLES_SIZE;
+    tab.resize(size);
+
+    for(i=0;i<size;i++)
+    {
+        idx = (ln - size + i) & Nmask;
+        tab[i] = lastSamples[idx];
+    }
+    return tab;
 }
 
 void Connection::readData()
