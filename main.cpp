@@ -22,6 +22,28 @@ int main(int argc, char *argv[])
 //    MainWindow w;
 //    w.show();
 
+    QVector<quint8> samples;
+    int step, sb, s, i, r;
+    sb = 100;
+    s = 97;
+    r=s-1;
+    step = sb / (sb-s);
+    samples.resize(s);
+    for(i=0;i<s;i++) samples[i] = i;
+    qDebug() << samples << samples.size();
+    samples.resize(sb);
+    for(i=sb-1;i>=0;i--)
+    {
+        --r;
+        if(i%step == 0) ++r ;
+        if(r<0) r = 0;
+        samples[i] = samples[r];
+    }
+    qDebug() << samples << samples.size();
+
+
+    return 0;
+
     Connection c;
     c.setPortName("COM7");
     qDebug() << c.open();

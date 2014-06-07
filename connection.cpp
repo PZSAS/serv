@@ -119,7 +119,7 @@ void Connection::endReading()
 {
     QString str = QString::fromLocal8Bit(buffer.mid(buffer.size()-4));
     float elapsed;
-    int freq, s, sb, i;
+    int freq, s, sb, i, r, step;
     if(str != "STOP")
     {
         emit log(tr("Brak potwierdzenia stopu"), 0);
@@ -140,21 +140,28 @@ void Connection::endReading()
     sb = qRound(elapsed*freq); // ile powinno być
     if(s < sb) // jezeli jest za malo
     {
-        // petla od dolu
-        for(i=0;i<sb;i++)
+        samples.resize(sb);
+        step;
+        r=s-1;
+        for(i=sb-1;i>0;i--)
         {
-
+            samples[i] = samples[r];
         }
     }
     else if(s > sb) // jezeli jest za duzo
     {
-        // petla z gory
-        for(i=sb-1;i>0;i--)
+        r = 0;
+        step = sb / (s-sb);
+        for(i=0;i<sb;i++)
         {
-
+            if(i%step == 0) ++r;
+            if(r>=s) r = s-1;
+            samples[i] = samples[r];
+            ++r;
         }
+        samples.resize(sb);
     }
-
+    qDebug() << s << sb;
 
     initReadChannel();
 
