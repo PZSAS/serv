@@ -10,7 +10,10 @@
 Connection::Connection(QObject *parent) :
     QObject(parent)
 {
-    port = new QSerialPort;
+    port = new QSerialPort();
+
+    timer = new QTimer(this);
+    timer->setInterval(5000);
 
     newRequest = false;
     started = false;
@@ -20,6 +23,7 @@ Connection::Connection(QObject *parent) :
     rawSamples.reserve(8192);
 
     connect(port, SIGNAL(readyRead()), this, SLOT(readData()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(checkConnection()));
 }
 
 Connection::~Connection()
@@ -47,13 +51,16 @@ bool Connection::open()
     port->setStopBits(QSerialPort::OneStop);
     port->setFlowControl(QSerialPort::NoFlowControl);
 
-    Container::getCurrent()->clear();
+    emit opened();
+    emit log(tr("Połączono"), 1);
     return true;
 }
 
 bool Connection::close()
 {
     port->close();
+    emit closed();
+    emit log(tr("Rozłączono"), 0);
     return true;
 }
 
@@ -85,7 +92,10 @@ void Connection::initReadChannel(int channel, int probes)
     rawSamples.clear();
     samples.clear();
     time.start();
+    lastRead.start();
+    timer->start();
     port->write(data);
+    emit log(tr("Wysłano żądanie %1 próbek z kanału %2").arg(probes).arg(channel), 0);
 }
 
 void Connection::handleWithSamples()
@@ -134,7 +144,7 @@ void Connection::endReading(bool cont)
         buffer = buffer.mid(0, buffer.size()-4);
         handleWithSamples();
     }
-    emit log(tr("Zakończono odczyt paczki danych"), 0);
+    emit log(tr("Zakończono odczyt paczki danych. Otrzymano %1 próbek").arg(samplesRead), 0);
 
 
     freq = FREQ;
@@ -173,10 +183,11 @@ void Connection::endReading(bool cont)
     }
     Container::getCurrent()->addSamples(samples);
 
-    qDebug() << Container::getCurrent()->getSamplesFromIndex(1).size()
-                << time.elapsed()/1000.0;
+
 
     if(cont) initReadChannel();
+
+
 
 }
 
@@ -185,7 +196,7 @@ void Connection::checkHeader()
     QString str = QString::fromLocal8Bit(header.mid(0, 4));
     if(str != "DATA")
     {
-        emit log(tr("Odebrano nieprawidłowy nagłówek"), 0);
+        emit log(tr("Odebrano nieprawidłowy nagłówek"), 3);
     }
 }
 
@@ -196,6 +207,7 @@ void Connection::prepareContainer()
     info.freq = FREQ;
     if(channel == 3) info.freq = MIC_FREQ;
 
+    Container::getCurrent()->clear();
     Container::getCurrent()->loadHeaders(channel, info);
 }
 
@@ -206,6 +218,7 @@ void Connection::initReadChannel()
 
 void Connection::startRecording()
 {
+    if(!open()) return;
     prepareContainer();
     initReadChannel();
 }
@@ -220,6 +233,11 @@ void Connection::stopAndSave()
     QString name = QString("test%1.fmd").arg(qrand());
     qDebug() << name;
     Container::getCurrent()->saveToFile(name);
+}
+
+bool Connection::isOpen()
+{
+    return port->isOpen();
 }
 
 bool Connection::setChannel(int channel)
@@ -250,6 +268,7 @@ int Connection::setChunkSize(int size)
 void Connection::readData()
 {
     QByteArray data;
+    lastRead.start();
     if(newRequest)
     {
         buffer += port->readAll();
@@ -281,3 +300,20 @@ void Connection::readData()
     }
 
 }
+
+void Connection::checkConnection()
+{
+    if(!port->isOpen())
+    {
+        timer->stop();
+        return;
+    }
+    int ms = lastRead.elapsed();
+    if(ms > 10000) // > 10 sekund
+    {
+        emit log(tr("Brak transmisji danych od %1s. Rozłączanie").arg(ms/1000), 4);
+        close();
+    }
+}
+
+

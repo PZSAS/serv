@@ -177,6 +177,18 @@ QStringList SignalAnalyzer::listOfTypes()
     return list;
 }
 
+QStringList SignalAnalyzer::listOfSignals()
+{
+    QStringList list;
+    int i, size;
+    size = signalTypes.size();
+    for(i=0;i<size;i++)
+    {
+        list.append(signalTypes.value(i));
+    }
+    return list;
+}
+
 QList<qint16> SignalAnalyzer::indexesOfTypes()
 {
     QList<qint16> types;
@@ -203,7 +215,7 @@ QMap<qint16, QString> SignalAnalyzer::initSignalType()
     map.insert(1, tr("Pasek 2"));
     map.insert(2, tr("Mikrofon"));
     map.insert(3, tr("Termopara"));
-    map.insert(4, tr("Napięcie baterii"));
+    map.insert(4, tr("Bateria"));
     return map;
 }
 

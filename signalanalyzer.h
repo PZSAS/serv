@@ -34,6 +34,7 @@ public:
     static bool isSignalKnown(qint16 idx);
     static bool isEventKnown(qint16 idx);
     QStringList listOfTypes();
+    static QStringList listOfSignals();
     QList<qint16> indexesOfTypes();
 
 public:

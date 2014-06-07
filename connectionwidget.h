@@ -11,6 +11,8 @@
 
 #include "container.h"
 #include "plot.h"
+#include "connection.h"
+#include "signalanalyzer.h"
 
 #define MAX_LOG_COUNT 200
 
@@ -31,20 +33,23 @@ private slots:
     void updateStatus();
     void updatePortList();
     void openCloseConnection();
-    void readData();
     void on_cancelConnectButton_clicked();
+    void onOpened();
+    void onClosed();
+    void log(QString message, int level=0);
 
 private:
-    void log(QString message, int level=0);
+
     void closeConnection();
     void updateState(QString state, QString value = QString());
+
 
 
 private:
     Ui::ConnectionWidget *ui;
     QTimer *timer;
     int availablePortCount;
-    QSerialPort *port;
+    Connection *connection;
     QByteArray rawData;
     QByteArray startSeq;
     bool startDetected;

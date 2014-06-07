@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>475</width>
-    <height>386</height>
+    <width>570</width>
+    <height>429</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,6 +20,13 @@
       <widget class="QPushButton" name="connectButton">
        <property name="text">
         <string>Rozpocznij zapis</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancelConnectButton">
+       <property name="text">
+        <string>Zakończ bez zapisywania</string>
        </property>
       </widget>
      </item>
@@ -37,13 +44,6 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="cancelConnectButton">
-       <property name="text">
-        <string>Zakończ bez zapisywania</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Port:</string>
@@ -52,6 +52,9 @@
      </item>
      <item>
       <widget class="QComboBox" name="portListWidget"/>
+     </item>
+     <item>
+      <widget class="QComboBox" name="channelWidget"/>
      </item>
      <item>
       <widget class="QPushButton" name="updatePortListButton">

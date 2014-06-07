@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QObject>
+#include <QTimer>
 #include <QByteArray>
 #include <QSerialPort>
 
@@ -27,7 +28,8 @@ public:
     void setPortName(QString portName);
     void initReadChannel();
     void startRecording();
-
+    void stopAndSave();
+    bool isOpen();
     bool setChannel(int channel);
     int  setChunkSize(int size);
 
@@ -40,12 +42,15 @@ private:
 
 signals:
     void log(QString message, int level);
+    void closed();
+    void opened();
 
 public slots:
-    void stopAndSave();
+
 
 private slots:
     void readData();
+    void checkConnection();
 
 private:
     QSerialPort *port;
@@ -54,7 +59,9 @@ private:
     QByteArray header;
     QVector<quint8> rawSamples;
     QVector<quint8> samples;
+    QTimer *timer;
     QTime time;
+    QTime lastRead;
     bool newRequest;
     bool started;
     int samplesRead;
