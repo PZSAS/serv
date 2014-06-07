@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QSettings>
 
+
 typedef struct
 {
 
@@ -62,7 +63,9 @@ public slots:
 
 public:
     bool load(QByteArray &data, bool append = false);
+    void loadHeaders(qint16 channel, SampleInfo info);
     bool loadFromFile(QString fileName, bool absolutePath = false);
+    void addSamples(QVector<quint8> sig);
     void clear();
     bool saveToFile(QString fileName = QString());
     int getDurationTime();

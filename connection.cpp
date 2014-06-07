@@ -4,7 +4,6 @@
 /* todo
 - polaczyc z kontenerem
 - polaczyc z widzetem
-- uzupelnianie probek
 
 */
 
@@ -12,9 +11,9 @@ Connection::Connection(QObject *parent) :
     QObject(parent)
 {
     port = new QSerialPort;
-    port->setPortName("COM7");
 
     newRequest = false;
+    started = false;
     chunkSize = 1000000;
     channel = 1;
 
@@ -47,6 +46,8 @@ bool Connection::open()
     port->setParity(QSerialPort::NoParity);
     port->setStopBits(QSerialPort::OneStop);
     port->setFlowControl(QSerialPort::NoFlowControl);
+
+    Container::getCurrent()->clear();
     return true;
 }
 
@@ -63,10 +64,11 @@ void Connection::setPortName(QString portName)
 
 void Connection::initReadChannel(int channel, int probes)
 {
-    //'a'     [kanał]    [ilość próbek 4 bajty]    'k'
+
     QByteArray data;
     char ch = (char) channel;
 
+    if(started) return;
     if(this->channel != channel) this->channel = channel;
     if(chunkSize != probes) chunkSize = probes;
 
@@ -76,6 +78,8 @@ void Connection::initReadChannel(int channel, int probes)
     data.append('k');
 
     newRequest = true;
+    started = true;
+    samplesRead = 0;
     buffer.clear();
     header.clear();
     rawSamples.clear();
@@ -88,14 +92,14 @@ void Connection::handleWithSamples()
 {
     QVector<quint8> newSamples;
     int i, count, size;
-    int freq = 100;
+    int freq = FREQ;
     qint64 sum;
 
-    if(channel == 3) freq = 500; // mikrofon
+    if(channel == 3) freq = MIC_FREQ; // mikrofon
 
     sum = 0;
     size = rawSamples.size();
-    newSamples.reserve(4096);
+    newSamples.reserve(INTERVAL);
     count = qRound(SAMPLES_PER_SEC/freq); // po ile uśredniać
 
     for(i=0;i<size;i++)
@@ -115,7 +119,7 @@ void Connection::handleWithSamples()
     samples << newSamples;
 }
 
-void Connection::endReading()
+void Connection::endReading(bool cont)
 {
     QString str = QString::fromLocal8Bit(buffer.mid(buffer.size()-4));
     float elapsed;
@@ -132,19 +136,25 @@ void Connection::endReading()
     }
     emit log(tr("Zakończono odczyt paczki danych"), 0);
 
-    // dodaj lub usun probki
-    freq = 100;
-    if(channel == 3) freq = 500; //mikrofon
+
+    freq = FREQ;
+    if(channel == 3) freq = MIC_FREQ; //mikrofon
     elapsed = time.elapsed() / 1000.0;
     s = samples.size(); // ile jest
     sb = qRound(elapsed*freq); // ile powinno być
+    started = false;
+
+    // dodaj lub usun probki
     if(s < sb) // jezeli jest za malo
     {
         samples.resize(sb);
-        step;
+        step = sb / (sb-s);
         r=s-1;
-        for(i=sb-1;i>0;i--)
+        for(i=sb-1;i>=0;i--)
         {
+            --r;
+            if(i%step == 0) ++r ;
+            if(r<0) r = 0;
             samples[i] = samples[r];
         }
     }
@@ -161,9 +171,12 @@ void Connection::endReading()
         }
         samples.resize(sb);
     }
-    qDebug() << s << sb;
+    Container::getCurrent()->addSamples(samples);
 
-    initReadChannel();
+    qDebug() << Container::getCurrent()->getSamplesFromIndex(1).size()
+                << time.elapsed()/1000.0;
+
+    if(cont) initReadChannel();
 
 }
 
@@ -176,9 +189,37 @@ void Connection::checkHeader()
     }
 }
 
+void Connection::prepareContainer()
+{
+    SampleInfo info;
+    info.sampleSize = 1;
+    info.freq = FREQ;
+    if(channel == 3) info.freq = MIC_FREQ;
+
+    Container::getCurrent()->loadHeaders(channel, info);
+}
+
 void Connection::initReadChannel()
 {
-    initReadChannel(channel, chunkSize); // poprawic
+    initReadChannel(channel, chunkSize);
+}
+
+void Connection::startRecording()
+{
+    prepareContainer();
+    initReadChannel();
+}
+
+void Connection::stopAndSave()
+{
+    endReading(false);
+    close();
+
+    // tymczasowo nazwa
+    qsrand(QTime::currentTime().second());
+    QString name = QString("test%1.fmd").arg(qrand());
+    qDebug() << name;
+    Container::getCurrent()->saveToFile(name);
 }
 
 bool Connection::setChannel(int channel)
@@ -227,10 +268,10 @@ void Connection::readData()
         data = port->readAll();
         samplesRead += data.size();
         buffer += data;
-        if(buffer.size() >= 4096 && samplesRead < (chunkSize+18))
+        if(buffer.size() >= INTERVAL && samplesRead < (chunkSize+18))
         {
-            rawSamples = Container::data8ToInt8Vec(buffer.mid(0, 4096));
-            buffer = buffer.mid(4096);
+            rawSamples = Container::data8ToInt8Vec(buffer.mid(0, INTERVAL));
+            buffer = buffer.mid(INTERVAL);
             handleWithSamples();
         }
     }

@@ -149,7 +149,7 @@ QVector<qint16> Container::data8ToInt16Vec(QByteArray &data)
     void *v;
     if(data.size() % 2 == 1)
     {
-        qDebug() << "zle dane";
+        qDebug() << "zle dane" << data.size();
         return tab;
     }
     max = data.size();
@@ -517,6 +517,16 @@ bool Container::load(QByteArray &data, bool append)
     return true;
 }
 
+void Container::loadHeaders(qint16 channel, SampleInfo info)
+{
+    clear();
+    this->startTime = QDateTime::currentDateTime();
+    samples[channel] = QVector<qint16>();
+    samplesInfo[channel] = info;
+    durationTime = -1;
+    loaded = true;
+}
+
 bool Container::loadFromFile(QString fileName, bool absolutePath)
 {
     QFile file;
@@ -545,6 +555,23 @@ bool Container::loadFromFile(QString fileName, bool absolutePath)
     buffer = file.read(128*1024*1024); // 128MB
     file.close();
     return load(buffer);
+}
+
+void Container::addSamples(QVector<quint8> sig)
+{
+    if(!loaded) return;
+    if(samples.keys().size() != 1) return;
+    QVector<qint16> tmp;
+    int i, size, key;
+    tmp.resize(sig.size());
+    size = sig.size();
+    for(i=0;i<size;i++) tmp[i] = (qint16) sig[i];
+    key = samples.keys().value(0);
+    samples[key] << tmp;
+
+    float freq = 100;
+    if(key == 3) freq = 500;
+    durationTime = samples[key].size() / freq;
 }
 
 void Container::clear()
@@ -580,8 +607,25 @@ bool Container::saveToFile(QString fileName)
         fileName = dir.absoluteFilePath(fileName);
     }
 
+
     QFile file(fileName);
     QByteArray buffer;
+
+
+    // usuniecie nadmiarowych probek
+    for(ir = samples.begin(); ir != samples.end() ; ++ir)
+    {
+        int n;
+        int f = samplesInfo[ir.key()].freq;
+        if(ir.value().size() % f != 0)
+        {
+            qDebug() << ir.value().size();
+            n = ir.value().size() - (ir.value().size() % f);
+            samples[ir.key()].resize(n);
+            qDebug() << samples[ir.key()].size();
+        }
+    }
+
 
     if(!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
     {
