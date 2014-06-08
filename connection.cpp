@@ -97,6 +97,7 @@ void Connection::initReadChannel(int channel, int probes)
     lastRead.start();
     timer->start();
     port->write(data);
+    port->waitForBytesWritten(10);
     emit log(tr("Wysłano żądanie %1 próbek z kanału %2").arg(probes).arg(channel), 0);
 }
 
@@ -147,14 +148,15 @@ void Connection::endReading(bool cont)
     if(str != "STOP")
     {
         emit log(tr("Brak potwierdzenia stopu"), 0);
-        qDebug() << "stop";
     }
     if(buffer.size() > 4)
     {
         buffer = buffer.mid(0, buffer.size()-4);
         handleWithSamples();
     }
-    emit log(tr("Zakończono odczyt paczki danych. Otrzymano %1 próbek").arg(samplesRead), 0);
+    str = tr("Zakończono odczyt paczki danych. Otrzymano %1 próbek w %2 s");
+    str = str.arg(samplesRead).arg(QString::number(time.elapsed()/1000.0));
+    emit log(str, 0);
 
 
     freq = FREQ;
@@ -240,13 +242,17 @@ void Connection::startRecording()
 void Connection::stopAndSave()
 {
     endReading(false);
-    close();
+    stop();
 
-    // tymczasowo nazwa
-    qsrand(QTime::currentTime().second());
-    QString name = QString("test%1.fmd").arg(qrand());
-    qDebug() << name;
-    Container::getCurrent()->saveToFile(name);
+
+    Container::getCurrent()->saveToFile();
+}
+
+void Connection::stop()
+{
+    port->write("b", 1);
+    port->waitForBytesWritten(15);
+    close();
 }
 
 bool Connection::isOpen()

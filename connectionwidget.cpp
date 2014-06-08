@@ -71,7 +71,7 @@ void ConnectionWidget::openCloseConnection()
     {
         connection->setPortName(ui->portListWidget->currentText());
         connection->setChannel(ui->channelWidget->currentIndex());
-        connection->setChunkSize(200000);
+        connection->setChunkSize(getSamplesCount());
         connection->startRecording();
     }
 }
@@ -115,6 +115,27 @@ void ConnectionWidget::updatePlot()
     ui->plot->repaint();
 }
 
+int ConnectionWidget::getSamplesCount()
+{
+    int idx = ui->samplesCoutn->currentIndex();
+    switch(idx)
+    {
+        case 0:
+            return 10000;
+        case 1:
+            return 100000;
+        case 2:
+            return 200000;
+        case 3:
+            return 500000;
+        case 4:
+            return 1000000;
+        default:
+            break;
+    }
+    return 200000;
+}
+
 
 
 void ConnectionWidget::onOpened()
@@ -123,6 +144,7 @@ void ConnectionWidget::onOpened()
     ui->cancelConnectButton->show();
     ui->portListWidget->setEnabled(false);
     ui->channelWidget->setEnabled(false);
+    ui->samplesCoutn->setEnabled(false);
     timer->start();
 }
 
@@ -133,6 +155,7 @@ void ConnectionWidget::onClosed()
     ui->cancelConnectButton->hide();
     ui->portListWidget->setEnabled(true);
     ui->channelWidget->setEnabled(true);
+    ui->samplesCoutn->setEnabled(true);
 }
 
 
@@ -141,6 +164,6 @@ void ConnectionWidget::onClosed()
 
 void ConnectionWidget::on_cancelConnectButton_clicked()
 {
-    connection->close();
+    connection->stop();
     Container::getCurrent()->clear();
 }

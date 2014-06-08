@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>570</width>
-    <height>429</height>
+    <width>595</width>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -79,6 +79,38 @@
      </item>
      <item>
       <widget class="QComboBox" name="channelWidget"/>
+     </item>
+     <item>
+      <widget class="QComboBox" name="samplesCoutn">
+       <property name="currentIndex">
+        <number>2</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>10kS</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>100kS</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>200kS</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>500kS</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1MS</string>
+        </property>
+       </item>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="updatePortListButton">

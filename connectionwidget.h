@@ -28,6 +28,7 @@ class ConnectionWidget : public QWidget
 public:
     explicit ConnectionWidget(QWidget *parent = 0);
     ~ConnectionWidget();
+    int getSamplesCount();
 
 private slots:
     void updatePortList();
@@ -37,6 +38,7 @@ private slots:
     void onClosed();
     void log(QString message, int level=0);
     void updatePlot();
+
 
 private:
 

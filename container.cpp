@@ -597,7 +597,7 @@ bool Container::saveToFile(QString fileName)
     {
         QSettings settings;
         QDir dir;
-        fileName = startTime.toString("ddMMMM").append(".fmd");
+        fileName = startTime.toString("ddMMMMhh-mm").append(".fmd");
         dir.setPath(settings.value("dataDir").toString());
         if(!dir.exists())
         {
@@ -619,10 +619,8 @@ bool Container::saveToFile(QString fileName)
         int f = samplesInfo[ir.key()].freq;
         if(ir.value().size() % f != 0)
         {
-            qDebug() << ir.value().size();
             n = ir.value().size() - (ir.value().size() % f);
             samples[ir.key()].resize(n);
-            qDebug() << samples[ir.key()].size();
         }
     }
 
@@ -698,6 +696,7 @@ bool Container::saveToFile(QString fileName)
 
     }
     file.close();
+    clear();
 
     return true;
 }

@@ -14,7 +14,7 @@
 #define INTERVAL 4096
 #define FREQ 100
 #define MIC_FREQ 500
-#define MIC 3
+#define MIC 2
 #define LAST_SAMPLES_SIZE 8192
 #define Nmask (LAST_SAMPLES_SIZE-1)
 
@@ -32,6 +32,7 @@ public:
     void initReadChannel();
     void startRecording();
     void stopAndSave();
+    void stop();
     bool isOpen();
     void sendCommand(int conf);
     bool setChannel(int channel);
